@@ -3,7 +3,9 @@
     "parser": "@typescript-eslint/parser",
     "plugins": [
       "@typescript-eslint",
-      "prettier"
+      "prettier",
+      "react",
+      "react-hooks"
     ],
     "extends": [
       "eslint:recommended",
