@@ -4,7 +4,7 @@ import viteLogo from '/vite.svg';
 import './App.css';
 import Logo from './components/Logo';
 import UserContainer from './components/user/UserContainer';
-import LeadsContainer from './components/leadInput/LeadsContainer';
+import LeadsContainer from './components/leads/LeadsContainer';
 
 function App() {
   const [count, setCount] = useState(0);
@@ -16,6 +16,7 @@ function App() {
         <UserContainer />
         <hr></hr>
         <LeadsContainer />
+        <hr />
         <a href="https://vitejs.dev" target="_blank">
           <img src={viteLogo} className="logo" alt="Vite logo" />
         </a>
