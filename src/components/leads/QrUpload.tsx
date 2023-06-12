@@ -1,14 +1,15 @@
 import { useState } from 'react';
 import { uploadFile } from '../../firebase-setup/firebase-functions';
 import QrScanner from 'qr-scanner';
+import config from '../../../config.ts';
 
-function qrUpload() {
+function QrUpload() {
   const [file, setFile] = useState(null);
-  const fsCollectionName = 'testing'; // the name of the colletion in firestore
+  const fsCollectionName = config.imageCollection; // FIXME: remove this line and modify the reference to it below
 
   async function scan(image: File) {
     const result = await QrScanner.scanImage(image);
-    console.log(result);
+    console.log('QrCode result:' + result);
   }
 
   const handleFileInput = (e) => {
@@ -19,12 +20,12 @@ function qrUpload() {
     if (inputFile.type.match('image.*')) {
       // Check if file is an image
       setFile(inputFile);
-      console.log(inputFile.type);
-      console.log(file);
+      console.log('File type: ' + inputFile.type);
+      console.log('FileState ' + file);
       uploadFile(inputFile, fsCollectionName);
       scan(inputFile);
     } else {
-      alert('not an image');
+      alert('not an image'); // TODO: replace with proper error handling
     }
   };
 
@@ -41,4 +42,4 @@ function qrUpload() {
   );
 }
 
-export default qrUpload;
+export default QrUpload;

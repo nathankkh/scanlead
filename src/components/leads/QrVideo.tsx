@@ -1,12 +1,13 @@
 import QrScanner from 'qr-scanner';
 import { useState, useEffect, useRef } from 'react';
+import ResultContainer from './results/ResultContainer';
 
-function QrVideoNimiq() {
-  const [cameraActive, setCameraActive] = useState(false);
-  const [qrScanner, setQrScanner] = useState<QrScanner>(); // stores qr scanner
-  const [hasScanned, setHasScanned] = useState(false);
+function QrVideo() {
+  const [qrScanner, setQrScanner] = useState<QrScanner>(); // stores the QrScanner
+  const [cameraActive, setCameraActive] = useState(false); // used to toggle
+  const [hasScanned, setHasScanned] = useState(false); //FIXME: set to false
+  const [qrResult, setQrResult] = useState<string>(); // stores result from scanner
   const videoRef = useRef(null);
-  const resultRef = useRef(null);
 
   useEffect(() => {
     // initialise qr scanner
@@ -19,6 +20,7 @@ function QrVideoNimiq() {
       { facingMode: 'environment', highlightScanRegion: true }
     );
     setQrScanner(scanner);
+    console.log('initialised qr scanner');
   }, []);
 
   useEffect(() => {
@@ -31,28 +33,27 @@ function QrVideoNimiq() {
   }, [cameraActive, qrScanner]);
 
   function handleScan(result: QrScanner.ScanResult) {
-    resultRef.current.innerHTML = result.data;
+    setQrResult(result.data);
     setCameraActive(false);
     setHasScanned(true);
   }
 
   return (
     <>
-      <button onClick={() => setCameraActive(true)}>Scan a QR code</button>
+      <button onClick={() => setCameraActive(true)}>Scan a QR code</button>{' '}
+      {/* TODO: add cancel */}
       <div
         id="videoContainer"
         style={{ display: cameraActive ? 'block' : 'none' }}
       >
         <video ref={videoRef} id="qr-video" width={'250px'} height={'250px'} />
       </div>
-      <div
-        id="resultContainer"
-        style={{ display: hasScanned ? 'block' : 'none' }}
-      >
-        <div ref={resultRef} />
-      </div>
+      <br></br>
+      {qrResult}
+      <br />
+      {hasScanned && <ResultContainer result={qrResult} />}
     </>
   );
 }
 
-export default QrVideoNimiq;
+export default QrVideo;

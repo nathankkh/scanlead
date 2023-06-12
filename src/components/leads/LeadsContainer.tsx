@@ -1,11 +1,15 @@
 import QrUpload from './QrUpload';
 //import QrVideo from './QrVideo.backup';
-import QrVideoNimiq from './QrVideo-nimiq';
-export default function LeadsContainer() {
+import QrVideo from './QrVideo';
+
+function LeadsContainer() {
+  // REFACTOR: Set qrResult state here, pass setter function to children as props
   return (
     <>
-      <QrVideoNimiq />
+      <QrVideo />
       <QrUpload />
     </>
   );
 }
+
+export default LeadsContainer;
