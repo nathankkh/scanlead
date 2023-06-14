@@ -31,8 +31,11 @@ export const db = getFirestore(firebaseApp);
 export const storage = getStorage(firebaseApp);
 
 export function getCurrentUserEmail() {
-  console.log(auth.currentUser.email);
-  return auth.currentUser.email;
+  if (auth.currentUser.email) {
+    return auth.currentUser.email;
+  } else {
+    throw new Error('No email found');
+  }
 }
 
 // Login

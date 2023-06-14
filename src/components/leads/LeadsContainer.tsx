@@ -8,6 +8,7 @@ function LeadsContainer() {
     <>
       <QrVideo />
       <QrUpload />
+      <hr />
     </>
   );
 }

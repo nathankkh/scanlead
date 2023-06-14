@@ -21,10 +21,7 @@ export default function UserLoginForm() {
           onChange={(e) => setPassword(e.target.value)}
           type="password"
         ></input>
-        <button
-          type="button"
-          onClick={() => loginEmailPassword(email, password)}
-        >
+        <button type="button" onClick={() => loginEmailPassword(email, password)}>
           Login
         </button>
         {/* TODO: Add Error message */}

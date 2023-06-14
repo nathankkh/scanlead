@@ -1,19 +1,22 @@
-import ResultInput from './ResultInput';
 import LeadForm from './LeadForm';
 import config from '../../../../config.ts';
-import { lookupValue } from '../../../firebase-setup/firebase-functions.js';
+import { lookupValue, getCurrentUserEmail } from '../../../firebase-setup/firebase-functions.js';
 import { useState, useEffect } from 'react';
 
 function ResultContainer({ result }) {
-  const [ebFields, setEbFields] = useState(config.leadFields);
+  const [leadFields, setLeadFields] = useState<typeof config.leadFields>(config.leadFields);
 
   useEffect(() => {
-    async function populateEbFields(obj: object) {
-      // TODO: run conditionally - only if firebase lookup returns null
-      const doc = (
-        await lookupValue(result, config.lookupCollection, config.lookupField)
-      )[0];
-      const updatedObj = { ...obj };
+    async function populateFields(obj) {
+      const updatedObj = { ...obj }; // copy object
+      // Check if this exists in the collection of scanned leads (i.e. user has been scanned before)
+      let doc = (await lookupValue(result, getCurrentUserEmail(), config.lookupField))[0];
+      if (!doc) {
+        // Does not exist, pull from EB
+        doc = (await lookupValue(result, config.lookupCollection, config.lookupField))[0];
+      }
+
+      // update object with values from doc
       for (const key of Object.keys(updatedObj)) {
         if (doc[key]) {
           updatedObj[key] = doc[key];
@@ -22,22 +25,16 @@ function ResultContainer({ result }) {
       return updatedObj;
     }
 
-    populateEbFields(config.leadFields).then((ebFields) => {
-      setEbFields(ebFields);
+    populateFields(config.leadFields).then((obj) => {
+      console.log(obj);
+      setLeadFields(obj);
     });
   }, [result]);
 
   return (
     <div>
-      <ResultInput result={result} />
       <hr />
-      <LeadForm
-        name={ebFields.name}
-        email={ebFields.email}
-        background={ebFields.background}
-        temperature="hot"
-        comments=""
-      />
+      {<LeadForm leadFields={leadFields} />}
     </div>
   );
 }

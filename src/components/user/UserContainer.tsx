@@ -20,9 +20,7 @@ export default function UserContainer() {
   return (
     <>
       {isLoggedIn ? <UserLogout /> : <UserLoginForm />}
-      <div>
-        {isLoggedIn ? <p>Logged in as {auth.currentUser?.email}</p> : null}
-      </div>
+      <div>{isLoggedIn ? <p>Logged in as {auth.currentUser?.email}</p> : null}</div>
     </>
   );
 }

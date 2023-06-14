@@ -73,3 +73,17 @@ button:focus-visible {
   height: 100px;
   margin-bottom: 2em;
 }
+
+.lead-form {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+
+.lead-form-field {
+  text-align: left;
+}
+
+textarea {
+  font-family: inherit;
+}
