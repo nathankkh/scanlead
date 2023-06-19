@@ -1,10 +1,5 @@
 import firebaseApp from './firebase-config';
-import {
-  getAuth,
-  signInWithEmailAndPassword,
-  onAuthStateChanged,
-  signOut
-} from 'firebase/auth';
+import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from 'firebase/auth';
 import {
   getFirestore,
   collection,
@@ -17,14 +12,11 @@ import {
   getDoc,
   getDocs,
   setDoc,
-  doc
+  doc,
+  onSnapshot,
+  orderBy
 } from 'firebase/firestore';
-import {
-  getStorage,
-  ref,
-  uploadBytesResumable,
-  getDownloadURL
-} from 'firebase/storage';
+import { getStorage, ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 
 export const auth = getAuth(firebaseApp);
 export const db = getFirestore(firebaseApp);
@@ -38,14 +30,14 @@ export function getCurrentUserEmail() {
   }
 }
 
+function isUserSignedIn() {
+  return !!auth.currentUser;
+}
+
 // Login
 export async function loginEmailPassword(username, password) {
   try {
-    const userCredential = await signInWithEmailAndPassword(
-      auth,
-      username,
-      password
-    );
+    const userCredential = await signInWithEmailAndPassword(auth, username, password);
     console.log(userCredential.user);
   } catch (e) {
     console.log(e);
@@ -107,11 +99,7 @@ export async function uploadFile(file, collectionName) {
  * @param {String} docName The name of the document. Recommended to concat userEmail_qrResult
  * @param {String} collectionName The name of the collection in Firestore to upload the document to.
  */
-export async function submitLead(
-  lead,
-  docName,
-  collectionName = auth.currentUser.email
-) {
+export async function submitLead(lead, docName, collectionName = auth.currentUser.email) {
   const collectionRef = collection(db, collectionName);
   try {
     await setDoc(doc(collectionRef, docName), lead, { merge: true });
@@ -154,4 +142,28 @@ export async function getAllLeads(collectionName) {
     results.push(doc.data());
   });
   return results;
+}
+
+export function subscribeToCollection(collectionName, snapshotCallback, errorCallback) {
+  const collectionRef = collection(db, collectionName);
+  const q = query(collectionRef, orderBy('timestamp', 'desc'));
+  const results = [];
+  return onSnapshot(q, snapshotCallback, errorCallback);
+
+  /* (querySnapshot) => {
+    querySnapshot.forEach((doc) => {
+      results.push(doc.data());
+    });
+  });
+  return [results, unsubscribe]; */
+}
+
+export async function deleteLead(collectionName, docName) {
+  const collectionRef = collection(db, collectionName);
+  try {
+    await deleteDoc(doc(collectionRef, docName));
+  } catch (err) {
+    console.log(err);
+    alert('error deleting lead: ' + err); //FIXME: error handling
+  }
 }

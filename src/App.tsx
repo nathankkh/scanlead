@@ -14,7 +14,7 @@ function App() {
         <hr></hr>
         {/* TODO: Show container only when user is logged in */}
         <LeadsContainer />
-        <hr />
+
         <a href="https://vitejs.dev" target="_blank">
           <img src={viteLogo} className="logo" alt="Vite logo" />
         </a>

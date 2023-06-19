@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { getCurrentUserEmail, submitLead } from '../../../firebase-setup/firebase-functions';
 
-function LeadForm({ leadFields }) {
+function LeadForm({ leadFields, afterSubmit }) {
   const { name, email, background, temperature, comments } = leadFields;
   const [leadComment, setLeadComment] = useState(comments);
   const [leadTemperature, setLeadTemperature] = useState(temperature);
@@ -33,7 +33,7 @@ function LeadForm({ leadFields }) {
     const lead = updateLead();
     try {
       const docName = getCurrentUserEmail() + '_' + leadFields.id;
-      submitLead(lead, docName).then(() => window.location.reload());
+      submitLead(lead, docName).then(afterSubmit);
       //TODO: add toast message
     } catch (err) {
       console.log(err);
@@ -43,22 +43,22 @@ function LeadForm({ leadFields }) {
 
   return (
     <>
-      <h1>Lookup Form</h1>
+      <h1>Form</h1>
       <form className="lead-form" onSubmit={handleFormSubmit}>
         <label htmlFor="name" className="lead-form-field">
           Name:
         </label>
-        <input type="text" id="name" value={name} readOnly disabled />
+        <input type="text" id="name" value={name} disabled />
 
         <label htmlFor="email" className="lead-form-field">
           Email:
         </label>
-        <input type="email" id="email" value={email} readOnly disabled />
+        <input type="email" id="email" value={email} disabled />
 
         <label htmlFor="background" className="lead-form-field">
           Background:
         </label>
-        <input type="text" id="background" value={background} readOnly disabled />
+        <input type="text" id="background" value={background} disabled />
 
         <label htmlFor="comments" className="lead-form-field">
           Comments:

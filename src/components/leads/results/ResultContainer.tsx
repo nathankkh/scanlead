@@ -34,7 +34,7 @@ function ResultContainer({ result }) {
   return (
     <div>
       <hr />
-      {<LeadForm leadFields={leadFields} />}
+      {<LeadForm leadFields={leadFields} afterSubmit={() => window.location.reload()} />}
     </div>
   );
 }

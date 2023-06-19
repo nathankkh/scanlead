@@ -87,3 +87,29 @@ button:focus-visible {
 textarea {
   font-family: inherit;
 }
+
+/* lead box */
+.lead-box {
+  border: 1px solid black;
+  padding: 10px;
+}
+
+.lead-box-row {
+  border-bottom: 1px solid black;
+  padding: 5px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.lead-button-container {
+  display: flex;
+  justify-content: center;
+  gap: 5px;
+}
+
+.lead-box-header {
+  display: flex;
+  justify-content: right;
+  gap: 5px;
+}

@@ -5,7 +5,7 @@ import ResultContainer from './results/ResultContainer';
 function QrVideo() {
   const [qrScanner, setQrScanner] = useState<QrScanner>(); // stores the QrScanner
   const [cameraActive, setCameraActive] = useState(false); // used to toggle
-  const [hasScanned, setHasScanned] = useState(false); //FIXME: set to false
+  const [hasScanned, setHasScanned] = useState(false);
   const [qrResult, setQrResult] = useState<string>(); // stores result from scanner
   const videoRef = useRef(null);
 
