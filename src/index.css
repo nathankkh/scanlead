@@ -65,5 +65,77 @@ button:focus-visible {
   }
   button {
     background-color: #f9f9f9;
+    color: inherit;
   }
+}
+
+.HHLogo {
+  width: 100px;
+  height: 100px;
+  margin-bottom: 2em;
+}
+
+.lead-form {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+
+.lead-form-field {
+  text-align: left;
+}
+
+textarea {
+  font-family: inherit;
+}
+
+/* lead box */
+.lead-box {
+  border: 1px solid black;
+  padding: 10px;
+}
+
+.lead-box-row {
+  border-bottom: 1px solid black;
+  padding: 5px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.lead-button-container {
+  display: flex;
+  justify-content: center;
+  gap: 5px;
+}
+
+.lead-box-header {
+  display: flex;
+  justify-content: right;
+  gap: 5px;
+}
+
+.page-select {
+  margin-top: 20px;
+  display: flex;
+  justify-content: center;
+}
+
+.page-select ul {
+  list-style-type: none;
+  padding: 0;
+  display: flex;
+}
+
+.page-select li {
+  margin-right: 5px;
+  cursor: pointer;
+  padding: 5px 10px;
+  border: 1px solid #cccccc;
+  border-radius: 4px;
+}
+
+.page-select li.active {
+  background-color: #ccc;
+  color: white;
 }

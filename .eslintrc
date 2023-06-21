@@ -15,6 +15,7 @@
     ],
     "rules": {
       "prettier/prettier": 2, // Means error
-      "react-hooks/exhaustive-deps": 2
+      "react-hooks/exhaustive-deps": 2,
+      "linebreak-style": 0
     }
   }
