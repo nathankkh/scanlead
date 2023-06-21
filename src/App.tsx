@@ -1,35 +1,24 @@
-import reactLogo from './assets/react.svg';
-import viteLogo from '/vite.svg';
+/* import reactLogo from './assets/react.svg';
+import viteLogo from '/vite.svg'; */
 import './App.css';
 import Logo from './components/Logo';
 import UserContainer from './components/user/UserContainer';
 import LeadsContainer from './components/leads/LeadsContainer';
+import AuthContext from './AuthContext';
+import { useState } from 'react';
 
 function App() {
-  return (
-    <>
-      <div>
-        <Logo />
-        <UserContainer />
-        <hr></hr>
-        {/* TODO: Show container only when user is logged in */}
-        <LeadsContainer />
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">Click on the Vite and React logos to learn more</p>
-    </>
+  return (
+    <AuthContext.Provider value={{ isLoggedIn }}>
+      <>
+        <Logo />
+        <UserContainer setIsLoggedIn={setIsLoggedIn} />
+        <hr />
+        {isLoggedIn && <LeadsContainer />}
+      </>
+    </AuthContext.Provider>
   );
 }
 

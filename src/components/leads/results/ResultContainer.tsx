@@ -26,14 +26,13 @@ function ResultContainer({ result }) {
     }
 
     populateFields(config.leadFields).then((obj) => {
-      console.log(obj);
       setLeadFields(obj);
     });
   }, [result]);
 
   return (
     <div>
-      <hr />
+      <hr /> {/* TODO: remove */}
       {<LeadForm leadFields={leadFields} afterSubmit={() => window.location.reload()} />}
     </div>
   );

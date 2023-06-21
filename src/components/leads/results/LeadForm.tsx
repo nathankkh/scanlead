@@ -2,17 +2,17 @@ import { useState, useEffect } from 'react';
 import { getCurrentUserEmail, submitLead } from '../../../firebase-setup/firebase-functions';
 
 function LeadForm({ leadFields, afterSubmit }) {
-  const { name, email, background, temperature, comments } = leadFields;
-  const [leadComment, setLeadComment] = useState(comments);
-  const [leadTemperature, setLeadTemperature] = useState(temperature);
+  const { name, jobTitle, experience, fieldOfInterest, leadType, comments } = leadFields;
+  const [leadComment, setLeadComment] = useState('');
+  const [type, setType] = useState('');
 
   useEffect(() => {
+    setType(leadType === '' ? 'warm' : leadType);
     setLeadComment(comments);
-    setLeadTemperature(temperature);
-  }, [comments, temperature]);
+  }, [comments, leadType]);
 
   function handleRadioChange(e) {
-    setLeadTemperature(e.target.value);
+    setType(e.target.value);
   }
 
   function handleCommentsChange(e) {
@@ -22,7 +22,7 @@ function LeadForm({ leadFields, afterSubmit }) {
   function updateLead() {
     const updatedLeadfields = { ...leadFields };
     updatedLeadfields.comments = leadComment;
-    updatedLeadfields.temperature = leadTemperature;
+    updatedLeadfields.leadType = type;
     updatedLeadfields.timestamp = Date.now();
     console.log(updatedLeadfields);
     return updatedLeadfields;
@@ -50,15 +50,20 @@ function LeadForm({ leadFields, afterSubmit }) {
         </label>
         <input type="text" id="name" value={name} disabled />
 
-        <label htmlFor="email" className="lead-form-field">
-          Email:
+        <label htmlFor="jobTitle" className="lead-form-field">
+          Job Title:
         </label>
-        <input type="email" id="email" value={email} disabled />
+        <input type="text" id="jobTitle" value={jobTitle} disabled />
 
-        <label htmlFor="background" className="lead-form-field">
-          Background:
+        <label htmlFor="experience" className="lead-form-field">
+          Experience:
         </label>
-        <input type="text" id="background" value={background} disabled />
+        <input type="text" id="experience" value={experience} disabled />
+
+        <label htmlFor="fieldOfInterest" className="lead-form-field">
+          Field of Interest:
+        </label>
+        <input type="text" id="fieldOfInterest" value={fieldOfInterest} disabled />
 
         <label htmlFor="comments" className="lead-form-field">
           Comments:
@@ -66,13 +71,13 @@ function LeadForm({ leadFields, afterSubmit }) {
         <textarea id="comments" defaultValue={leadComment} onChange={handleCommentsChange} />
 
         <fieldset>
-          <legend>Temperature:</legend>
+          <legend>Lead Type:</legend>
           <label>
             <input
               type="radio"
-              name="temperature"
+              name="leadType"
               value="cold"
-              checked={leadTemperature === 'cold'}
+              checked={type === 'cold'}
               onChange={handleRadioChange}
             />
             Cold
@@ -81,20 +86,20 @@ function LeadForm({ leadFields, afterSubmit }) {
           <label>
             <input
               type="radio"
-              name="temperature"
-              value="medium"
-              checked={leadTemperature === 'medium'}
+              name="leadType"
+              value="warm"
+              checked={type === 'warm'}
               onChange={handleRadioChange}
             />
-            Medium
+            Warm
           </label>
 
           <label>
             <input
               type="radio"
-              name="temperature"
+              name="leadType"
               value="hot"
-              checked={leadTemperature === 'hot'}
+              checked={type === 'hot'}
               onChange={handleRadioChange}
             />
             Hot

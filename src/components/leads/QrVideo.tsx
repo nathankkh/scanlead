@@ -7,7 +7,7 @@ function QrVideo() {
   const [cameraActive, setCameraActive] = useState(false); // used to toggle
   const [hasScanned, setHasScanned] = useState(false);
   const [qrResult, setQrResult] = useState<string>(); // stores result from scanner
-  const videoRef = useRef(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
     // REFACTOR: Run on app initialisation instead of on component mount
@@ -22,6 +22,13 @@ function QrVideo() {
     );
     setQrScanner(scanner);
     console.log('initialised qr scanner');
+
+    return () => {
+      // REFACTOR: Run on app unmount instead of on component unmount
+      // clean up
+      scanner.destroy();
+      console.log('destroyed qr scanner');
+    };
   }, []);
 
   useEffect(() => {
@@ -45,8 +52,8 @@ function QrVideo() {
       <div id="videoContainer" style={{ display: cameraActive ? 'block' : 'none' }}>
         <video ref={videoRef} id="qr-video" width={'250px'} height={'250px'} />
       </div>
-      <br></br>
-      {qrResult}
+      <br />
+      {qrResult} {/* TODO: remove */}
       <br />
       {hasScanned && <ResultContainer result={qrResult} />}
     </>

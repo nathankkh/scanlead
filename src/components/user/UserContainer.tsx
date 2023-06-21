@@ -1,11 +1,12 @@
 import UserLoginForm from './UserLoginForm';
 import UserLogout from './UserLogout';
-import { useState } from 'react';
+import { useContext } from 'react';
 import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from '../../firebase-setup/firebase-functions';
+import AuthContext from '../../AuthContext';
 
-export default function UserContainer() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+export default function UserContainer({ setIsLoggedIn }) {
+  const { isLoggedIn } = useContext(AuthContext);
 
   onAuthStateChanged(auth, (user) => {
     if (user) {

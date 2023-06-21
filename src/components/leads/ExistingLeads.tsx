@@ -7,35 +7,56 @@ import {
 import LeadsEditModal from './LeadsEditModal';
 
 interface Lead {
-  id: string;
+  id: string | number;
   name: string;
-  background: string;
+  email: string;
+  phone: string | number;
+  jobTitle: string;
+  experience: string;
+  fieldOfInterest: string;
+  temperature: string;
+  comments: string;
+  timestamp: number;
   // TODO: Update interface with all relevant fields
 }
 
 function ExistingLeads() {
-  const [rowsToShow, setRowsToShow] = useState(12);
-  const [selectedLead, setSelectedLead] = useState<Lead>(); // {} object, to be used when editing / deleting
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const [leads, setLeads] = useState<Lead[]>([]); // Array containing each lead as an {} object
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [leadsPerPage, setLeadsPerPage] = useState(12);
+  const [selectedLead, setSelectedLead] = useState<Lead>(); // {} object, to be used when editing / deleting
+  const [currentPage, setCurrentPage] = useState(1);
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const filteredLeads = leads.filter((lead) =>
+    lead.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+  const indexOfLastLead = currentPage * leadsPerPage;
+  const indexOfFirstLead = indexOfLastLead - leadsPerPage;
+  const currentLeads = filteredLeads.slice(indexOfFirstLead, indexOfLastLead);
 
   useEffect(() => {
+    // Creates a listener for a given firebase collection. Returns an unsubscribe function, which runs on component unmount.
+    //TODO: Consider running only on refresh button click; update ONLY with changes
     const unsubscribe = subscribeToCollection(
-      'abc123@abc.com', //FIXME: replace with getCurrentUserEmail()
+      getCurrentUserEmail(),
       (querySnapshot) => {
         const existingLeads = querySnapshot.docs.map((snapshot) => snapshot.data());
         setLeads(existingLeads);
       },
       (error) => {
         console.log(error);
-        alert('error!');
+        alert('error subscribing');
       }
     );
-
     return () => {
       unsubscribe();
     };
   }, []);
+
+  function paginate(pageNumber) {
+    setCurrentPage(pageNumber);
+  }
 
   function properCase(str: string) {
     return str
@@ -48,8 +69,6 @@ function ExistingLeads() {
   }
 
   function handleEdit(e) {
-    //FIXME: Retrieve lead from event (e) => ...
-    // setSelectedLead(e);
     const index = e.target.parentNode.parentNode.dataset.index;
     setSelectedLead(leads[index]);
     setIsModalOpen(true);
@@ -63,7 +82,7 @@ function ExistingLeads() {
     const index = e.target.parentNode.parentNode.dataset.index;
     const id = leads[index].id;
     const collectionName = getCurrentUserEmail();
-    const docName = collectionName + '_' + id;
+    const docName = collectionName + '_' + id; //FIXME: Possible bug if document isn't added to firebase correctly.
     console.log(docName);
     deleteLead(collectionName, docName).then(() => {
       alert('deleted');
@@ -72,19 +91,25 @@ function ExistingLeads() {
 
   return (
     <>
-      <h1>EXISTING LEADS</h1>
-      {/* Dropdown List for how many records to be shown */}
+      <h1>LEADS</h1>
       <div className="lead-box">
         <div className="lead-box-header">
-          <input id="lead-box-search" placeholder="Search by Name"></input>{' '}
-          {/* TODO: Add search functionality */}
-          {/* https://blog.logrocket.com/how-to-use-react-hooks-firebase-firestore/ */}
-          <label htmlFor="row-numbers">Rows to show: </label>
+          <input
+            id="lead-box-search"
+            placeholder="Search by Name"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+          <label htmlFor="row-count">Rows to show: </label>
           <select
-            id="row-numbers"
-            onChange={(e) => setRowsToShow(Number(e.target.value))}
-            value={rowsToShow}
+            id="row-count"
+            onChange={(e) => {
+              setLeadsPerPage(Number(e.target.value));
+              setCurrentPage(1); // Reset page number to 1 when changing rows to show
+            }}
+            value={leadsPerPage}
           >
+            <option value="2">2</option>
             <option value="12">12</option>
             <option value="24">24</option>
             <option value="48">48</option>
@@ -92,10 +117,10 @@ function ExistingLeads() {
         </div>
 
         <div className="row-container">
-          {leads.length > 0 &&
-            leads.map((lead, index) => (
+          {(currentLeads.length > 0 &&
+            currentLeads.map((lead, index) => (
               <div key={lead.id} className="lead-box-row" data-index={index}>
-                {properCase(lead.name)} - {properCase(lead.background)} - {lead.id}
+                {properCase(lead.name)} - {properCase(lead.experience)}
                 <div className="lead-button-container">
                   <button className="edit-button" onClick={handleEdit}>
                     Edit
@@ -105,7 +130,23 @@ function ExistingLeads() {
                   </button>
                 </div>
               </div>
-            ))}
+            ))) || <p>No leads yet!</p>}
+        </div>
+
+        <div className="page-select">
+          <ul>
+            {Array(Math.ceil(filteredLeads.length / leadsPerPage))
+              .fill(null)
+              .map((_, index) => (
+                <li
+                  key={index}
+                  className={currentPage === index + 1 ? 'active' : ''}
+                  onClick={() => paginate(index + 1)}
+                >
+                  {index + 1}
+                </li>
+              ))}
+          </ul>
         </div>
       </div>
 

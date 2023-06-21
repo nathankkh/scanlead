@@ -1,7 +1,7 @@
 import LeadForm from './results/LeadForm';
 
 function LeadsEditModal({ isOpen, onClose, lead }) {
-  if (!isOpen) return null; //FIXME: uncomment
+  if (!isOpen) return null;
 
   //TODO: Make this pop up
   return (
@@ -16,7 +16,7 @@ function LeadsEditModal({ isOpen, onClose, lead }) {
 
         <LeadForm
           leadFields={lead}
-          afterSubmit={() => window.location.reload() /*set modal to false*/}
+          afterSubmit={() => window.location.reload() /* FIXME: set modal to false*/}
         />
       </div>
     </>

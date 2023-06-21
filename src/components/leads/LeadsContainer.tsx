@@ -10,7 +10,6 @@ function LeadsContainer() {
       <QrVideo />
       <QrUpload />
       <ExistingLeads />
-      <hr />
     </>
   );
 }

@@ -7,8 +7,11 @@ const config = {
     id: '',
     name: '',
     email: '',
-    background: '',
-    temperature: '',
+    phone: '',
+    jobTitle: '',
+    experience: '',
+    fieldOfInterest: '',
+    leadType: '', // [hot, warm, cold]
     comments: '',
     timestamp: undefined
   }
