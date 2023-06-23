@@ -1,6 +1,7 @@
 import QrScanner from 'qr-scanner';
 import { useState, useEffect, useRef } from 'react';
 import ResultContainer from './results/ResultContainer';
+import config from '../../../config';
 
 function QrVideo() {
   const [qrScanner, setQrScanner] = useState<QrScanner>(); // stores the QrScanner
@@ -12,13 +13,14 @@ function QrVideo() {
   useEffect(() => {
     // REFACTOR: Run on app initialisation instead of on component mount
     // initialise qr scanner
-    const video = videoRef.current;
+    const video = videoRef.current!;
+
     const scanner = new QrScanner(
       video,
-      (result) => {
+      (result: any) => {
         handleScan(result);
       },
-      { facingMode: 'environment', highlightScanRegion: true }
+      config.scannerOptions
     );
     setQrScanner(scanner);
     console.log('initialised qr scanner');
@@ -40,7 +42,7 @@ function QrVideo() {
     }
   }, [cameraActive, qrScanner]);
 
-  function handleScan(result: QrScanner.ScanResult) {
+  function handleScan(result) {
     setQrResult(result.data);
     setCameraActive(false);
     setHasScanned(true);

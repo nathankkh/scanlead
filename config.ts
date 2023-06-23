@@ -14,6 +14,10 @@ const config = {
     leadType: '', // [hot, warm, cold]
     comments: '',
     timestamp: undefined
+  },
+  scannerOptions: {
+    facingMode: 'environment',
+    highlightScanRegion: true
   }
 };
 
