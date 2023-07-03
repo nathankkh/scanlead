@@ -14,7 +14,8 @@ import {
   setDoc,
   doc,
   onSnapshot,
-  orderBy
+  orderBy,
+  writeBatch
 } from 'firebase/firestore';
 import { getStorage, ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 
@@ -115,7 +116,7 @@ export async function submitLead(lead, docName, collectionName = auth.currentUse
  * @param {*} lookupValue  The value to search for. (e.g. QR code's result)
  * @param {String} collectionName The name of the collection in Firestore to search in.
  * @param {String} referenceField  The field in the collection to find lookupString. (e.g. uid, email)
- * @returns A promise of an array of documents that match the lookupString.
+ * @returns A promise of an array of documents that match the lookupString. (Should only be one)
  */
 export async function lookupValue(lookupValue, collectionName, referenceField) {
   // used to get attendee's data from a successful QR scan
@@ -135,6 +136,7 @@ export async function lookupValue(lookupValue, collectionName, referenceField) {
  * @returns A promise of an array of documents from the collection.
  */
 export async function getAllLeads(collectionName) {
+  //FIXME: Unused, can delete
   const collectionRef = collection(db, collectionName);
   const querySnapshot = await getDocs(collectionRef);
   const results = [];
@@ -144,18 +146,18 @@ export async function getAllLeads(collectionName) {
   return results;
 }
 
+/**
+ *
+ * @param {*} collectionName
+ * @param {*} snapshotCallback
+ * @param {*} errorCallback
+ * @returns an unsubscribe function
+ */
 export function subscribeToCollection(collectionName, snapshotCallback, errorCallback) {
   const collectionRef = collection(db, collectionName);
   const q = query(collectionRef, orderBy('timestamp', 'desc'));
   const results = [];
   return onSnapshot(q, snapshotCallback, errorCallback);
-
-  /* (querySnapshot) => {
-    querySnapshot.forEach((doc) => {
-      results.push(doc.data());
-    });
-  });
-  return [results, unsubscribe]; */
 }
 
 export async function deleteLead(collectionName, docName) {
@@ -165,5 +167,37 @@ export async function deleteLead(collectionName, docName) {
   } catch (err) {
     console.log(err);
     alert('error deleting lead: ' + err); //FIXME: error handling
+  }
+}
+
+/**
+ * Uploads an array of documents to a given collection in Firestore as one or more batchWrites.
+ * @param {string} collectionName The name of the collection in Firestore to upload the documents to.
+ * @param {Array} dataArray An array of documents to upload. Each document should be an object with data stored as key-value pairs.
+ * @param {number} batchSize The number of operations per batch. Default is 500.
+ */
+export async function uploadBatch(collectionName, dataArray, batchSize = 500) {
+  batchSize = batchSize - 1; // -1 to account for lastUpdated doc
+  const lastUpdateRef = doc(db, collectionName, 'lastUpdated');
+  const collectionRef = collection(db, collectionName);
+  const numBatches = Math.ceil(dataArray.length / batchSize);
+
+  for (let i = 0; i < numBatches; i++) {
+    try {
+      const batch = writeBatch(db);
+      const startIndex = i * batchSize;
+      const endIndex = startIndex + batchSize; // non-inclusive
+      const batchArray = dataArray.slice(startIndex, endIndex);
+
+      batchArray.forEach((obj) => {
+        const docRef = doc(collectionRef /* , obj.EBid */);
+        batch.set(docRef, { ...obj });
+      });
+      batch.set(lastUpdateRef, { timestamp: Date.now() });
+      batch.commit();
+      console.log('batched');
+    } catch (err) {
+      console.log(err);
+    }
   }
 }

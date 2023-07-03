@@ -135,17 +135,15 @@ function ExistingLeads() {
 
         <div className="page-select">
           <ul>
-            {Array(Math.ceil(filteredLeads.length / leadsPerPage))
-              .fill(null)
-              .map((_, index) => (
-                <li
-                  key={index}
-                  className={currentPage === index + 1 ? 'active' : ''}
-                  onClick={() => paginate(index + 1)}
-                >
-                  {index + 1}
-                </li>
-              ))}
+            {Array(Math.ceil(filteredLeads.length / leadsPerPage)).map((_, index) => (
+              <li
+                key={index}
+                className={currentPage === index + 1 ? 'active' : ''}
+                onClick={() => paginate(index + 1)}
+              >
+                {index + 1}
+              </li>
+            ))}
           </ul>
         </div>
       </div>

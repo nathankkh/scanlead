@@ -13,11 +13,14 @@ function QrVideo() {
   useEffect(() => {
     // REFACTOR: Run on app initialisation instead of on component mount
     // initialise qr scanner
-    const video = videoRef.current!;
-
+    const video = videoRef.current;
+    if (!video) {
+      alert('video is null');
+      return;
+    }
     const scanner = new QrScanner(
       video,
-      (result: any) => {
+      (result: string | QrScanner.ScanResult) => {
         handleScan(result);
       },
       config.scannerOptions

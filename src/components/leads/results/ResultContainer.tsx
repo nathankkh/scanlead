@@ -14,6 +14,7 @@ function ResultContainer({ result }) {
       if (!doc) {
         // Does not exist, pull from EB
         doc = (await lookupValue(result, config.lookupCollection, config.lookupField))[0];
+        // FIXME: Create empty object if not found
       }
 
       // update object with values from doc
