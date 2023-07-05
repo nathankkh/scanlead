@@ -18,7 +18,7 @@ function App() {
         <UserContainer setIsLoggedIn={setIsLoggedIn} />
         <hr />
         {isLoggedIn && <LeadsContainer />}
-        <GetAttendees />
+        <GetAttendees /> {/* TODO: Remove */}
       </>
     </AuthContext.Provider>
   );

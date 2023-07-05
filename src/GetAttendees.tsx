@@ -14,9 +14,9 @@ function GetAttendees() {
     try {
       const response = await fetch(
         'https://www.eventbriteapi.com/v3/events/' +
-          `${hhID}` +
-          '/attendees/?page=' +
-          `${pageNumber}`,
+        `${hhID}` +
+        '/attendees/?page=' +
+        `${pageNumber}`,
         {
           method: 'GET',
           headers: {
@@ -36,38 +36,50 @@ function GetAttendees() {
    * Retrieves attendees from eventbrite that are created after the last update time.
    * Loops through attendees returned from eventbrite and compares created time with last update time.
    * If no last update time is found, retrieves all attendees.
+   * @returns Array of attendees that are created after the last update time.
    */
   async function getNewAttendees() {
-    const lastUpdateRef = doc(db, config.lookupCollection, 'lastUpdated');
-    const lastUpdateDocSnap = await getDoc(lastUpdateRef);
-    const result: Array<typeof config.leadFields> = [];
-    let pageNumber = 1;
-    let hasNextPage = true;
+    try {
+      const lastUpdateDoc = await getDoc(doc(db, 'temp', 'lastUpdate'));
+      const lastUpdateTime = lastUpdateDoc.exists() ? lastUpdateDoc.data().timestamp : 0;
+      console.log('last update time: ' + `${lastUpdateTime}`);
+      const result = [];
+      let currentPage = 1;
+      let lastCreated = Number.NEGATIVE_INFINITY;
 
-    while (hasNextPage) {
-      const data = await getData(pageNumber); // Alternative: Get continuation token
-      const filteredAttendees = data.attendees.filter((attendee: { created: string }) => {
-        if (lastUpdateDocSnap.exists()) {
-          // filters only attendees who registered after last update time
-          return new Date(attendee.created).getTime() > lastUpdateDocSnap.data().timestamp;
-        } else {
-          return true; // all attendees in this page are new
-        }
-      });
+      const initialData = await getData(currentPage);
+      const totalPages = initialData.pagination.page_count;
+      console.log(totalPages);
+      currentPage = totalPages;
 
-      for (const attendee of filteredAttendees) {
-        if (attendee.cancelled) {
-          continue;
+      // iterate through remaining pages from the back
+      for (currentPage; currentPage >= 1; currentPage--) {
+        console.log('inside loop: ' + `${currentPage}`);
+        const data = await getData(currentPage);
+
+        const filteredAttendees = data.attendees.filter((attendee) => {
+          return new Date(attendee.created).getTime() > lastUpdateTime;
+        });
+
+        for (const attendee of filteredAttendees) {
+          if (new Date(attendee.created).getTime() > lastCreated) {
+            lastCreated = new Date(attendee.created).getTime();
+          }
+          const template = populateAttendeeTemplate(attendee);
+          result.push(template);
         }
-        const template = populateAttendeeTemplate(attendee);
-        result.push(template);
+
+        // prevent extra API calls if the most recent call had more new attendees
+        if (filteredAttendees.length == 0) {
+          break;
+        }
+        // TODO: optimise further, check whether filtered attendee length is less than current page size
       }
-
-      pageNumber++;
-      hasNextPage = data.pagination.has_more_items;
+      console.log([result, lastCreated]);
+      return [result, lastCreated];
+    } catch (error) {
+      console.log(error);
     }
-    console.log(result);
-    return result;
   }
 
   function populateAttendeeTemplate(attendee) {
@@ -86,7 +98,7 @@ function GetAttendees() {
   async function uploadEB() {
     const data = await getNewAttendees();
     if (data) {
-      uploadBatch(config.lookupCollection, data); //TODO: Change collection name
+      uploadBatch('testing', data[0], data[1]); //TODO: Change collection name
     } else {
       alert('Empty array'); // TODO: error handling
     }

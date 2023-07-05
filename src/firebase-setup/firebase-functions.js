@@ -147,10 +147,10 @@ export async function getAllLeads(collectionName) {
 }
 
 /**
- *
+ * Creates a listener for a given collection in Firestore.
  * @param {*} collectionName
- * @param {*} snapshotCallback
- * @param {*} errorCallback
+ * @param {*} snapshotCallback A callback function to be called when a snapshot is received. Use in conjunction with a way to display a data snapshot.
+ * @param {*} errorCallback A callback function to be called when an error occurs.
  * @returns an unsubscribe function
  */
 export function subscribeToCollection(collectionName, snapshotCallback, errorCallback) {
@@ -174,10 +174,14 @@ export async function deleteLead(collectionName, docName) {
  * Uploads an array of documents to a given collection in Firestore as one or more batchWrites.
  * @param {string} collectionName The name of the collection in Firestore to upload the documents to.
  * @param {Array} dataArray An array of documents to upload. Each document should be an object with data stored as key-value pairs.
+ * @param {number} lastUpdateTime Milliseconds since epoch. Used to update the lastUpdated doc.
  * @param {number} batchSize The number of operations per batch. Default is 500.
+ * @deprecated
  */
-export async function uploadBatch(collectionName, dataArray, batchSize = 500) {
+export async function uploadBatch(collectionName, dataArray, lastUpdateTime, batchSize = 500) {
   batchSize = batchSize - 1; // -1 to account for lastUpdated doc
+  console.log('awaiting batch');
+  console.log(dataArray);
   const lastUpdateRef = doc(db, collectionName, 'lastUpdated');
   const collectionRef = collection(db, collectionName);
   const numBatches = Math.ceil(dataArray.length / batchSize);
@@ -186,14 +190,14 @@ export async function uploadBatch(collectionName, dataArray, batchSize = 500) {
     try {
       const batch = writeBatch(db);
       const startIndex = i * batchSize;
-      const endIndex = startIndex + batchSize; // non-inclusive
+      const endIndex = startIndex + batchSize;
       const batchArray = dataArray.slice(startIndex, endIndex);
 
       batchArray.forEach((obj) => {
         const docRef = doc(collectionRef /* , obj.EBid */);
         batch.set(docRef, { ...obj });
       });
-      batch.set(lastUpdateRef, { timestamp: Date.now() });
+      batch.set(lastUpdateRef, { timestamp: lastUpdateTime, dateTime: new Date(lastUpdateTime) });
       batch.commit();
       console.log('batched');
     } catch (err) {
