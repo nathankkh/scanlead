@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import {
   getCurrentUserEmail,
   deleteLead,
@@ -49,7 +50,17 @@ function ExistingLeads() {
         alert('error subscribing');
       }
     );
+
+    // Event listener for handling tab close event
+    const handleTabClose = () => {
+      unsubscribe();
+    };
+
+    // Add event listener for beforeunload event (when tab is closed)
+    window.addEventListener('beforeunload', handleTabClose);
+
     return () => {
+      window.removeEventListener('beforeunload', handleTabClose);
       unsubscribe();
     };
   }, []);
@@ -76,6 +87,7 @@ function ExistingLeads() {
 
   function handleCloseModal() {
     setIsModalOpen(false);
+    setSelectedLead(undefined);
   }
 
   function handleDelete(e) {
@@ -109,13 +121,14 @@ function ExistingLeads() {
             }}
             value={leadsPerPage}
           >
-            <option value="2">2</option>
-            <option value="12">12</option>
-            <option value="24">24</option>
-            <option value="48">48</option>
+            <option value="10">10</option>
+            <option value="20">20</option>
+            <option value="50">50</option>
+            <option value="100">100</option>
           </select>
         </div>
 
+        {/* This displays all existing leads in rows. Includes edit and delete buttons for each lead */}
         <div className="row-container">
           {(currentLeads.length > 0 &&
             currentLeads.map((lead, index) => (
@@ -133,6 +146,7 @@ function ExistingLeads() {
             ))) || <p>No leads yet!</p>}
         </div>
 
+        {/* This displays the page numbers at the bottom of the page */}
         <div className="page-select">
           <ul>
             {Array(Math.ceil(filteredLeads.length / leadsPerPage)).map((_, index) => (
@@ -149,7 +163,26 @@ function ExistingLeads() {
       </div>
 
       <hr />
-      <LeadsEditModal isOpen={isModalOpen} onClose={handleCloseModal} lead={selectedLead} />
+      {/* <LeadsEditModal isOpen={isModalOpen} onClose={handleCloseModal} lead={selectedLead} /> */}
+      {/*       <Modal
+        isOpen={isModalOpen}
+        closeTimeoutMS={200}
+        onRequestClose={handleCloseModal}
+        shouldCloseOnOverlayClick={true}
+      >
+        <h1>Modal</h1>
+        <LeadForm
+          leadFields={selectedLead}
+          afterSubmit={() => handleCloseModal()} />
+      </Modal> */}
+
+      {isModalOpen &&
+        createPortal(
+          <div className="modal">
+            <LeadsEditModal isOpen={isModalOpen} onClose={handleCloseModal} lead={selectedLead} />
+          </div>,
+          document.body
+        )}
     </>
   );
 }

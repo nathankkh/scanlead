@@ -23,17 +23,29 @@ const leadFields = {
   comments: ''
   // timestamp: undefined
 };
-const eventID = '627917607467';
-const uploadCollection = 'upload';
-// const cronSchedule = '*/1 * * * *'; // Every minute
+
+const uploadCollection = 'eventbrite';
 
 /**
  * Retrieves key from google secret manager
- * @return {string} Secret value from Google Secret Manager
+ * @return {Promise<string>} Secret value from Google Secret Manager
  */
-async function getSecretValue() {
+async function getEBKey() {
   const client = new SecretManagerServiceClient();
   const name = 'projects/292470144917/secrets/EB_key/versions/latest';
+
+  const [version] = await client.accessSecretVersion({ name });
+  const secretValue = version.payload.data.toString();
+  return secretValue;
+}
+
+/**
+ * Retrieves EB Event ID from google secret manager
+ * @return {Promise<string>} Secret value from Google Secret Manager
+ */
+async function getEventID() {
+  const client = new SecretManagerServiceClient();
+  const name = 'projects/292470144917/secrets/EB_event_id/versions/latest';
 
   const [version] = await client.accessSecretVersion({ name });
   const secretValue = version.payload.data.toString();
@@ -46,7 +58,8 @@ async function getSecretValue() {
  * @return {json} JSON of returned data from eventbrite. Contains 2 parent keys: pagination and attendees
  */
 async function getData(pageNumber = 1) {
-  const key = await getSecretValue();
+  const key = await getEBKey();
+  const eventID = await getEventID();
   try {
     const response = await fetch(
       'https://www.eventbriteapi.com/v3/events/' +
@@ -61,7 +74,7 @@ async function getData(pageNumber = 1) {
       }
     );
     const data = await response.json();
-    logger.info(data.pagination);
+    logger.info('data retrieved');
     return data;
   } catch (error) {
     logger.error(error);
@@ -102,7 +115,7 @@ async function getNewAttendees(collectionName) {
     const result = [];
     let currentPage = 1;
     let lastCreated = Number.NEGATIVE_INFINITY;
-
+    // TODO: make use of initial call.
     const initialData = await getData(currentPage);
     const totalPages = initialData.pagination.page_count;
 
@@ -111,7 +124,7 @@ async function getNewAttendees(collectionName) {
       const data = await getData(currentPage);
       /* const continuationToken = data.pagination.continuation; */
       const filteredAttendees = data.attendees.filter((attendee) => {
-        return new Date(attendee.created).getTime() > lastUpdateTime;
+        return new Date(attendee.created).getTime() > lastUpdateTime && attendee.cancelled == false;
       });
       for (const attendee of filteredAttendees) {
         if (new Date(attendee.created).getTime() > lastCreated) {
@@ -173,14 +186,18 @@ async function uploadBatch(collectionName, dataArray, lastUpdateTime, batchSize 
 
 /**
  * Uploads all new attendees from eventbrite.
+ * Used for testing purposes.
+ * @deprecated
  */
-exports.uploadEB = functions.region('asia-southeast1').https.onRequest(async () => {
+exports.uploadEB = functions.region('asia-southeast1').https.onRequest(async (req, res) => {
   const data = await getNewAttendees(uploadCollection);
   if (data) {
     uploadBatch(uploadCollection, data[0], data[1]);
     logger.info('done');
+    res.send('done');
   } else {
     logger.info('No new attendees'); // TODO: ERROR HANDLING
+    res.send('error');
   }
 });
 
