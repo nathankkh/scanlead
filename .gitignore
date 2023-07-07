@@ -23,5 +23,8 @@ dist-ssr
 *.sln
 *.sw?
 
+# Firebase deploy cache
+.firebase/*
+
 src/firebase-setup/firebase-config.js
 todolist

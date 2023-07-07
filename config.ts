@@ -12,8 +12,12 @@ const config = {
     experience: '',
     fieldOfInterest: '',
     leadType: '', // [hot, warm, cold]
-    comments: '',
-    timestamp: undefined
+    comments: ''
+    //timestamp: undefined
+  },
+  scannerOptions: {
+    facingMode: 'environment',
+    highlightScanRegion: true
   }
 };
 

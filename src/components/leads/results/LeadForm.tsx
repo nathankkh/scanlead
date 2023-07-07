@@ -45,7 +45,11 @@ function LeadForm({ leadFields, afterSubmit }) {
     <>
       <h1>Form</h1>
       <form className="lead-form" onSubmit={handleFormSubmit}>
-        <label htmlFor="name" className="lead-form-field">
+        <label
+          htmlFor="name"
+          className="lead-form-field"
+          placeholder="<Loading from database, will be present in the exported file>"
+        >
           Name:
         </label>
         <input type="text" id="name" value={name} disabled />
