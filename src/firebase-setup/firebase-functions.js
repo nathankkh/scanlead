@@ -52,7 +52,7 @@ export async function loginEmailPassword(username, password) {
     console.log(e);
     const errorCode = e.code;
     const errorMessage = firebaseErrors[errorCode] || e.code;
-    console.error("Error logging in:", errorMessage);
+    console.error('Error logging in:', errorMessage);
     throw new Error(errorMessage);
   }
 }

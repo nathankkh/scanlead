@@ -31,7 +31,7 @@ const config = {
       marginRight: '-50%',
       transform: 'translate(-50%, -50%)',
       backgroundColor: 'rgba(255, 255, 255, 255)',
-      borderRadius: '10px',
+      borderRadius: '10px'
     }
   }
 };

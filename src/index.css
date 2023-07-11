@@ -147,10 +147,10 @@ textarea {
 
 .modal-close-button {
   cursor: pointer;
-    position: absolute;
-    right: 0;
-    top: 0;
-    font-size: 22px;
-    padding: 0.5em;
-    user-select: none;
+  position: absolute;
+  right: 0;
+  top: 0;
+  font-size: 22px;
+  padding: 0.5em;
+  user-select: none;
 }
