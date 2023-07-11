@@ -33,7 +33,7 @@ function ResultContainer({ result }) {
 
   return (
     <div>
-      <hr /> {/* TODO: remove */}
+      <hr /> {/* TODO: remove, add Modal */}
       {<LeadForm leadFields={leadFields} afterSubmit={() => window.location.reload()} />}
     </div>
   );

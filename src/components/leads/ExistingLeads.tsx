@@ -1,14 +1,14 @@
 import { useState, useEffect } from 'react';
-import { createPortal } from 'react-dom';
 import {
   getCurrentUserEmail,
   deleteLead,
   subscribeToCollection
 } from '../../firebase-setup/firebase-functions';
-import LeadsEditModal from './LeadsEditModal';
+import Modal from 'react-modal';
+import LeadForm from './results/LeadForm';
 
 interface Lead {
-  id: string | number;
+  id: string;
   name: string;
   email: string;
   phone: string | number;
@@ -21,6 +21,17 @@ interface Lead {
   // TODO: Update interface with all relevant fields
 }
 
+const customStyles = {
+  content: {
+    top: '50%',
+    left: '50%',
+    right: 'auto',
+    bottom: 'auto',
+    marginRight: '-50%',
+    transform: 'translate(-50%, -50%)'
+  }
+};
+
 function ExistingLeads() {
   const [leads, setLeads] = useState<Lead[]>([]); // Array containing each lead as an {} object
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -30,7 +41,9 @@ function ExistingLeads() {
   const [searchQuery, setSearchQuery] = useState('');
 
   const filteredLeads = leads.filter((lead) =>
-    lead.name.toLowerCase().includes(searchQuery.toLowerCase())
+    lead.name
+      ? lead.name.toLowerCase().includes(searchQuery.toLowerCase())
+      : lead.id.includes(searchQuery)
   );
   const indexOfLastLead = currentPage * leadsPerPage;
   const indexOfFirstLead = indexOfLastLead - leadsPerPage;
@@ -42,8 +55,10 @@ function ExistingLeads() {
     const unsubscribe = subscribeToCollection(
       getCurrentUserEmail(),
       (querySnapshot) => {
-        const existingLeads = querySnapshot.docs.map((snapshot) => snapshot.data());
-        setLeads(existingLeads);
+        if (!querySnapshot.empty) {
+          const existingLeads = querySnapshot.docs.map((snapshot) => snapshot.data());
+          setLeads(existingLeads);
+        }
       },
       (error) => {
         console.log(error);
@@ -91,14 +106,19 @@ function ExistingLeads() {
   }
 
   function handleDelete(e) {
-    const index = e.target.parentNode.parentNode.dataset.index;
-    const id = leads[index].id;
-    const collectionName = getCurrentUserEmail();
-    const docName = collectionName + '_' + id; //FIXME: Possible bug if document isn't added to firebase correctly.
-    console.log(docName);
-    deleteLead(collectionName, docName).then(() => {
-      alert('deleted');
-    }); //TODO: add toast message
+    try {
+      const index = e.target.parentNode.parentNode.dataset.index;
+      const id = leads[index].id;
+      const collectionName = getCurrentUserEmail();
+      const docName = collectionName + '_' + id; //FIXME: Possible bug if document isn't added to firebase correctly.
+      console.log(docName);
+      deleteLead(collectionName, docName).then(() => {
+        alert('Deleted!');
+      }); //TODO: add toast message
+    } catch (error) {
+      console.log(error);
+      alert('Error deleting, please try again!');
+    }
   }
 
   return (
@@ -133,7 +153,7 @@ function ExistingLeads() {
           {(currentLeads.length > 0 &&
             currentLeads.map((lead, index) => (
               <div key={lead.id} className="lead-box-row" data-index={index}>
-                {properCase(lead.name)} - {properCase(lead.experience)}
+                {lead.name ? properCase(lead.name) : lead.id} - {properCase(lead.experience)}
                 <div className="lead-button-container">
                   <button className="edit-button" onClick={handleEdit}>
                     Edit
@@ -163,26 +183,17 @@ function ExistingLeads() {
       </div>
 
       <hr />
-      {/* <LeadsEditModal isOpen={isModalOpen} onClose={handleCloseModal} lead={selectedLead} /> */}
-      {/*       <Modal
+      <Modal
         isOpen={isModalOpen}
-        closeTimeoutMS={200}
         onRequestClose={handleCloseModal}
-        shouldCloseOnOverlayClick={true}
+        style={customStyles}
+        contentLabel="Example Modal"
       >
-        <h1>Modal</h1>
-        <LeadForm
-          leadFields={selectedLead}
-          afterSubmit={() => handleCloseModal()} />
-      </Modal> */}
-
-      {isModalOpen &&
-        createPortal(
-          <div className="modal">
-            <LeadsEditModal isOpen={isModalOpen} onClose={handleCloseModal} lead={selectedLead} />
-          </div>,
-          document.body
+        <button onClick={handleCloseModal}>X</button>
+        {isModalOpen && (
+          <LeadForm leadFields={selectedLead} afterSubmit={() => handleCloseModal()} />
         )}
+      </Modal>
     </>
   );
 }

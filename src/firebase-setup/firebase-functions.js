@@ -35,6 +35,14 @@ function isUserSignedIn() {
   return !!auth.currentUser;
 }
 
+const firebaseErrors = {
+  'auth/invalid-email': 'Invalid email address',
+  'auth/user-disabled': 'User disabled',
+  'auth/user-not-found': 'User not found',
+  'auth/wrong-password': 'Wrong password',
+  'auth/too-many-requests': 'Too many login attempts. Please wait or approach the team for help.'
+};
+
 // Login
 export async function loginEmailPassword(username, password) {
   try {
@@ -42,6 +50,10 @@ export async function loginEmailPassword(username, password) {
     console.log(userCredential.user);
   } catch (e) {
     console.log(e);
+    const errorCode = e.code;
+    const errorMessage = firebaseErrors[errorCode] || e.code;
+    console.error("Error logging in:", errorMessage);
+    throw new Error(errorMessage);
   }
 }
 
@@ -156,7 +168,6 @@ export async function getAllLeads(collectionName) {
 export function subscribeToCollection(collectionName, snapshotCallback, errorCallback) {
   const collectionRef = collection(db, collectionName);
   const q = query(collectionRef, orderBy('timestamp', 'desc'));
-  const results = [];
   return onSnapshot(q, snapshotCallback, errorCallback);
 }
 

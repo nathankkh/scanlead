@@ -10,6 +10,8 @@ function QrVideo() {
   const [qrResult, setQrResult] = useState<string>(); // stores result from scanner
   const videoRef = useRef<HTMLVideoElement>(null);
 
+  const [btnText, setBtnText] = useState('Scan QR Code');
+
   useEffect(() => {
     // REFACTOR: Run on app initialisation instead of on component mount
     // initialise qr scanner
@@ -40,8 +42,10 @@ function QrVideo() {
     // toggles QR scanner on/off
     if (cameraActive) {
       qrScanner?.start();
+      setBtnText('Cancel');
     } else {
       qrScanner?.stop();
+      setBtnText('Scan QR Code');
     }
   }, [cameraActive, qrScanner]);
 
@@ -53,7 +57,8 @@ function QrVideo() {
 
   return (
     <>
-      <button onClick={() => setCameraActive(true)}>Scan a QR code</button> {/* TODO: add cancel */}
+      <button onClick={() => setCameraActive(!cameraActive)}>{btnText}</button>{' '}
+      {/* TODO: add cancel */}
       <div id="videoContainer" style={{ display: cameraActive ? 'block' : 'none' }}>
         <video ref={videoRef} id="qr-video" width={'250px'} height={'250px'} />
       </div>
