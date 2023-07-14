@@ -9,6 +9,7 @@ function LeadModal({ isOpen, onClose, lead }) {
 
   function handleCloseModal() {
     setIsModalOpen(false);
+    //TODO: Clear lead
   }
 
   return (

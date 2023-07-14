@@ -3,7 +3,7 @@ import config from '../../../../config.ts';
 import { lookupValue, getCurrentUserEmail } from '../../../firebase-setup/firebase-functions.js';
 import { useState, useEffect } from 'react';
 
-function ResultContainer({ result }) {
+function ResultContainer({ result, resetState }) {
   const [leadFields, setLeadFields] = useState<typeof config.leadFields>(config.leadFields);
 
   useEffect(() => {
@@ -14,7 +14,12 @@ function ResultContainer({ result }) {
       if (!doc) {
         // Does not exist, pull from EB
         doc = (await lookupValue(result, config.lookupCollection, config.lookupField))[0];
-        // FIXME: Create empty object if not found
+        // Creates empty object if not found from EB pull
+        if (!doc) {
+          doc = {};
+          const key = config.lookupField;
+          doc[key] = result;
+        }
       }
 
       // update object with values from doc
@@ -33,8 +38,8 @@ function ResultContainer({ result }) {
 
   return (
     <div>
-      <hr /> {/* TODO: remove, add Modal */}
-      {<LeadForm leadFields={leadFields} afterSubmit={() => window.location.reload()} />}
+      <hr />
+      {<LeadForm leadFields={leadFields} afterSubmit={resetState} />}
     </div>
   );
 }

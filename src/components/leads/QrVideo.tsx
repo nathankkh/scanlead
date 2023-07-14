@@ -13,7 +13,6 @@ function QrVideo() {
   const [btnText, setBtnText] = useState('Scan QR Code');
 
   useEffect(() => {
-    // REFACTOR: Run on app initialisation instead of on component mount
     // initialise qr scanner
     const video = videoRef.current;
     if (!video) {
@@ -31,7 +30,6 @@ function QrVideo() {
     console.log('initialised qr scanner');
 
     return () => {
-      // REFACTOR: Run on app unmount instead of on component unmount
       // clean up
       scanner.destroy();
       console.log('destroyed qr scanner');
@@ -41,6 +39,7 @@ function QrVideo() {
   useEffect(() => {
     // toggles QR scanner on/off
     if (cameraActive) {
+      resetState(); // TODO: check if this is intended behaviour
       qrScanner?.start();
       setBtnText('Cancel');
     } else {
@@ -55,17 +54,23 @@ function QrVideo() {
     setHasScanned(true);
   }
 
+  /**
+   * Hides the leadForm by setting hasScanned and QR result to an undefined value.
+   */
+  function resetState() {
+    setHasScanned(false);
+    setQrResult(undefined);
+  }
+
   return (
     <>
       <button onClick={() => setCameraActive(!cameraActive)}>{btnText}</button>{' '}
-      {/* TODO: add cancel */}
       <div id="videoContainer" style={{ display: cameraActive ? 'block' : 'none' }}>
         <video ref={videoRef} id="qr-video" width={'250px'} height={'250px'} />
       </div>
       <br />
-      {qrResult} {/* TODO: remove */}
-      <br />
-      {hasScanned && <ResultContainer result={qrResult} />}
+      {hasScanned && <ResultContainer result={qrResult} resetState={resetState} />}{' '}
+      {/* TODO: pass in setHasScanned */}
     </>
   );
 }

@@ -6,7 +6,6 @@ import UserContainer from './components/user/UserContainer';
 import LeadsContainer from './components/leads/LeadsContainer';
 import AuthContext from './AuthContext';
 import { useState } from 'react';
-import TestModal from './components/TestModal';
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -18,7 +17,6 @@ function App() {
         <UserContainer setIsLoggedIn={setIsLoggedIn} />
         <hr />
         {isLoggedIn && <LeadsContainer />}
-        <TestModal />
       </>
     </AuthContext.Provider>
   );

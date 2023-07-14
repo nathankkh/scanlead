@@ -119,10 +119,9 @@ async function getNewAttendees(collectionName) {
     const initialData = await getData(currentPage);
     const totalPages = initialData.pagination.page_count;
 
-    // iterate through pages from the back
+    // iterate through pages from the back. Note that this prevents the use of continuation tokens
     for (currentPage = totalPages; currentPage >= 1; currentPage--) {
       const data = await getData(currentPage);
-      /* const continuationToken = data.pagination.continuation; */
       const filteredAttendees = data.attendees.filter((attendee) => {
         return new Date(attendee.created).getTime() > lastUpdateTime && attendee.cancelled == false;
       });

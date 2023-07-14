@@ -36,9 +36,9 @@ function isUserSignedIn() {
 }
 
 const firebaseErrors = {
-  'auth/invalid-email': 'Invalid email address',
+  'auth/invalid-email': 'Invalid username',
   'auth/user-disabled': 'User disabled',
-  'auth/user-not-found': 'User not found',
+  'auth/user-not-found': 'Invalid username',
   'auth/wrong-password': 'Wrong password',
   'auth/too-many-requests': 'Too many login attempts. Please wait or approach the team for help.'
 };

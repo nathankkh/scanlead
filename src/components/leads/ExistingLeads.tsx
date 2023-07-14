@@ -6,6 +6,7 @@ import {
 } from '../../firebase-setup/firebase-functions';
 import Modal from 'react-modal';
 import LeadForm from './results/LeadForm';
+import config from '../../../config';
 
 interface Lead {
   id: string;
@@ -21,24 +22,14 @@ interface Lead {
   // TODO: Update interface with all relevant fields
 }
 
-const customStyles = {
-  content: {
-    top: '50%',
-    left: '50%',
-    right: 'auto',
-    bottom: 'auto',
-    marginRight: '-50%',
-    transform: 'translate(-50%, -50%)'
-  }
-};
-
 function ExistingLeads() {
   const [leads, setLeads] = useState<Lead[]>([]); // Array containing each lead as an {} object
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [leadsPerPage, setLeadsPerPage] = useState(12);
-  const [selectedLead, setSelectedLead] = useState<Lead>(); // {} object, to be used when editing / deleting
+  const [selectedLead, setSelectedLead] = useState<Lead>(); // {} object, to be used when editing
   const [currentPage, setCurrentPage] = useState(1);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState(''); //TODO: change to useRef
 
   const filteredLeads = leads.filter((lead) =>
     lead.name
@@ -73,7 +64,6 @@ function ExistingLeads() {
 
     // Add event listener for beforeunload event (when tab is closed)
     window.addEventListener('beforeunload', handleTabClose);
-
     return () => {
       window.removeEventListener('beforeunload', handleTabClose);
       unsubscribe();
@@ -95,30 +85,44 @@ function ExistingLeads() {
   }
 
   function handleEdit(e) {
+    Modal.setAppElement(document.getElementById('edit-modal'));
     const index = e.target.parentNode.parentNode.dataset.index;
     setSelectedLead(leads[index]);
-    setIsModalOpen(true);
+    setIsEditModalOpen(true);
   }
 
-  function handleCloseModal() {
-    setIsModalOpen(false);
+  function handleCloseEditModal() {
+    setIsEditModalOpen(false);
     setSelectedLead(undefined);
   }
 
   function handleDelete(e) {
+    Modal.setAppElement(document.getElementById('delete-modal'));
+    const index = e.target.parentNode.parentNode.dataset.index;
+    setSelectedLead(leads[index]);
+    setIsDeleteModalOpen(true);
+  }
+
+  function confirmDelete() {
     try {
-      const index = e.target.parentNode.parentNode.dataset.index;
-      const id = leads[index].id;
+      const id = selectedLead?.id;
       const collectionName = getCurrentUserEmail();
       const docName = collectionName + '_' + id; //FIXME: Possible bug if document isn't added to firebase correctly.
-      console.log(docName);
       deleteLead(collectionName, docName).then(() => {
         alert('Deleted!');
-      }); //TODO: add toast message
+      });
     } catch (error) {
       console.log(error);
       alert('Error deleting, please try again!');
     }
+
+    setSelectedLead(undefined);
+    setIsDeleteModalOpen(false);
+  }
+
+  function cancelDelete() {
+    setSelectedLead(undefined);
+    setIsDeleteModalOpen(false);
   }
 
   return (
@@ -132,12 +136,12 @@ function ExistingLeads() {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
-          <label htmlFor="row-count">Rows to show: </label>
+          <label htmlFor="row-count">Leads per page: </label>
           <select
             id="row-count"
             onChange={(e) => {
               setLeadsPerPage(Number(e.target.value));
-              setCurrentPage(1); // Reset page number to 1 when changing rows to show
+              setCurrentPage(1); // Resets page number to 1 when changing rows to show
             }}
             value={leadsPerPage}
           >
@@ -161,6 +165,18 @@ function ExistingLeads() {
                   <button className="delete-button" onClick={handleDelete}>
                     Delete
                   </button>
+                  <div id="delete-modal">
+                    <Modal
+                      isOpen={isDeleteModalOpen}
+                      onRequestClose={cancelDelete}
+                      style={config.modalStyles}
+                      contentLabel="Delete Lead Confirmation"
+                    >
+                      <p>Are you sure you want to delete this lead?</p>
+                      <button onClick={confirmDelete}>Delete</button>
+                      <button onClick={cancelDelete}>Cancel</button>
+                    </Modal>
+                  </div>
                 </div>
               </div>
             ))) || <p>No leads yet!</p>}
@@ -183,17 +199,19 @@ function ExistingLeads() {
       </div>
 
       <hr />
-      <Modal
-        isOpen={isModalOpen}
-        onRequestClose={handleCloseModal}
-        style={customStyles}
-        contentLabel="Example Modal"
-      >
-        <button onClick={handleCloseModal}>X</button>
-        {isModalOpen && (
-          <LeadForm leadFields={selectedLead} afterSubmit={() => handleCloseModal()} />
-        )}
-      </Modal>
+      <div id="edit-modal">
+        <Modal
+          isOpen={isEditModalOpen}
+          onRequestClose={handleCloseEditModal}
+          style={config.modalStyles}
+          contentLabel="Edit Lead"
+        >
+          <button onClick={handleCloseEditModal}>X</button>
+          {isEditModalOpen && (
+            <LeadForm leadFields={selectedLead} afterSubmit={() => handleCloseEditModal()} />
+          )}
+        </Modal>
+      </div>
     </>
   );
 }

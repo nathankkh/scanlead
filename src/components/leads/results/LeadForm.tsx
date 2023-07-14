@@ -43,7 +43,6 @@ function LeadForm({ leadFields, afterSubmit }) {
 
   return (
     <>
-      <h1>Form</h1>
       <form className="lead-form" onSubmit={handleFormSubmit}>
         <label htmlFor="name" className="lead-form-field">
           Name:
