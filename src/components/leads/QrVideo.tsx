@@ -39,7 +39,7 @@ function QrVideo() {
   useEffect(() => {
     // toggles QR scanner on/off
     if (cameraActive) {
-      resetState(); // TODO: check if this is intended behaviour
+      resetState();
       qrScanner?.start();
       setBtnText('Cancel');
     } else {

@@ -33,7 +33,9 @@ function LeadModal({ isOpen, onClose, lead }) {
           style={config.modalStyles}
           contentLabel="Example Modal"
         >
-          <button onClick={handleCloseModal}>X</button>
+          <button onClick={handleCloseModal} id="modal-close-button">
+            X
+          </button>
           {isModalOpen && <LeadForm leadFields={lead} afterSubmit={() => handleCloseModal()} />}
         </Modal>
       </div>

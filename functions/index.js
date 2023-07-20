@@ -32,7 +32,7 @@ const uploadCollection = 'eventbrite';
  */
 async function getEBKey() {
   const client = new SecretManagerServiceClient();
-  const name = 'projects/292470144917/secrets/EB_key/versions/latest';
+  const name = 'projects/292470144917/secrets/EB_key/versions/2';
 
   const [version] = await client.accessSecretVersion({ name });
   const secretValue = version.payload.data.toString();
@@ -92,10 +92,16 @@ function populateAttendeeTemplate(attendee) {
   template.name = attendee.profile.name;
   template.email = attendee.profile.email;
   template.phone = attendee.profile.cell_phone;
-  // template.jobTitle = obj.profile.job_title;
-  // FIXME: Modify based on actual form
-  /* template.experience = obj.answers[0].answer; // can match question_id too 
-  template.fieldOfInterest = obj.answers[1].answer; */
+  template.jobTitle = attendee.profile.job_title;
+  /*
+    0: Where did you hear of this event
+    1: Work experience (years)
+    2: Field of interest
+    3: interested sessions
+    4: T&C
+  */
+  template.experience = attendee.answers[1].answer; // can match question_id too
+  template.fieldOfInterest = attendee.answers[2].answer;
   return template;
 }
 
