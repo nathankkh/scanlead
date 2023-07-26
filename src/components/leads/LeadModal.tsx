@@ -3,6 +3,8 @@ import Modal from 'react-modal';
 import config from '../../../config';
 import { useState } from 'react';
 
+// NOT IN USE
+
 function LeadModal({ isOpen, onClose, lead }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   if (!isOpen) return null;

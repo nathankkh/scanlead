@@ -178,7 +178,6 @@ async function uploadBatch(collectionName, dataArray, lastUpdateTime, batchSize 
 
       batch.set(lastUpdateRef, {
         timestamp: lastUpdateTime,
-        timesUpdated: FieldValue.increment(1),
         'timestamp datetime': new Date(lastUpdateTime)
       });
       batch.commit();

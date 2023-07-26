@@ -34,7 +34,6 @@ function LeadForm({ leadFields, afterSubmit }) {
     try {
       const docName = getCurrentUserEmail() + '_' + leadFields.id;
       submitLead(lead, docName).then(afterSubmit);
-      //TODO: add toast message
     } catch (err) {
       console.log(err);
       alert('Please submit again');
@@ -45,10 +44,9 @@ function LeadForm({ leadFields, afterSubmit }) {
     <>
       <form className="lead-form" onSubmit={handleFormSubmit}>
         <label htmlFor="name" className="lead-form-field">
-          Name:
+          Name <span style={{ color: 'red' }}>(Read-only)</span>
         </label>
-        <input
-          type="text"
+        <textarea
           id="name"
           value={name}
           placeholder="<Loading from database, will be present in the exported file>"
@@ -56,17 +54,17 @@ function LeadForm({ leadFields, afterSubmit }) {
         />
 
         <label htmlFor="jobTitle" className="lead-form-field">
-          Job Title:
+          Job Title <span style={{ color: 'red' }}>(Read-only)</span>
         </label>
         <input type="text" id="jobTitle" value={jobTitle} disabled />
 
         <label htmlFor="experience" className="lead-form-field">
-          Experience:
+          Experience <span style={{ color: 'red' }}>(Read-only)</span>
         </label>
         <input type="text" id="experience" value={experience} disabled />
 
         <label htmlFor="fieldOfInterest" className="lead-form-field">
-          Field of Interest:
+          Field of Interest <span style={{ color: 'red' }}>(Read-only)</span>
         </label>
         <input type="text" id="fieldOfInterest" value={fieldOfInterest} disabled />
 

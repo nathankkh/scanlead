@@ -42,7 +42,6 @@ function ExistingLeads() {
 
   useEffect(() => {
     // Creates a listener for a given firebase collection. Returns an unsubscribe function, which runs on component unmount.
-    //TODO: Consider running only on refresh button click; update ONLY with changes
     const unsubscribe = subscribeToCollection(
       getCurrentUserEmail(),
       (querySnapshot) => {
