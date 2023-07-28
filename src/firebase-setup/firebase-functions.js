@@ -39,7 +39,7 @@ const firebaseErrors = {
   'auth/invalid-email': 'Invalid username',
   'auth/user-disabled': 'User disabled',
   'auth/user-not-found': 'Invalid username',
-  'auth/wrong-password': 'Wrong password',
+  'auth/wrong-password': 'Incorrect password',
   'auth/too-many-requests': 'Too many login attempts. Please wait or approach the team for help.'
 };
 
