@@ -36,7 +36,7 @@ function LeadModal({ isOpen, onClose, lead }) {
           contentLabel="Example Modal"
         >
           <button onClick={handleCloseModal} id="modal-close-button">
-            X
+            {/* X */}×
           </button>
           {isModalOpen && <LeadForm leadFields={lead} afterSubmit={() => handleCloseModal()} />}
         </Modal>

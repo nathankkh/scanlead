@@ -4,25 +4,26 @@ import { useContext } from 'react';
 import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from '../../firebase-setup/firebase-functions';
 import { useRef } from 'react';
-import AuthContext from '../../AuthContext';
+import AuthContext from '../../utils/AuthContext';
 import config from '../../../config';
 import { lookupValue, submitLead } from '../../firebase-setup/firebase-functions'; //TODO: DELETE ME
 
 import Grid from '@mui/joy/Grid';
+import Typography from '@mui/joy/Typography';
 
 export default function UserContainer({ setIsLoggedIn }) {
   const { isLoggedIn } = useContext(AuthContext);
   const valueRef = useRef<HTMLInputElement>(null);
 
-  async function testUploadLead(id) { //TODO: DELETE ME
-    let attendee = (await lookupValue(id, config.lookupCollection, config.lookupField))[0];
-    let docName = 'hh4@headhunt.com.sg_' + attendee.id;
+  async function testUploadLead(id) {
+    //TODO: DELETE ME
+    const attendee = (await lookupValue(id, config.lookupCollection, config.lookupField))[0];
+    const docName = 'hh4@headhunt.com.sg_' + attendee.id;
     attendee['timestamp'] = Date.now();
     try {
-
       submitLead(attendee, docName).then(() => {
         console.log('Lead submitted!');
-      })
+      });
     } catch (err) {
       alert(err);
     }
@@ -111,27 +112,28 @@ export default function UserContainer({ setIsLoggedIn }) {
 
   return (
     <>
-      {isLoggedIn && <Grid container alignItems={'center'} justifyContent={'space-between'} sx={{ paddingTop: '1rem' }}>
-
-        <Grid>
-          Logged in as <strong>{displayUser(auth.currentUser?.email)}</strong>
+      {isLoggedIn && (
+        <Grid
+          container
+          alignItems={'center'}
+          justifyContent={'space-between'}
+          sx={{ paddingTop: '1rem' }}
+        >
+          <Grid>
+            <Typography>
+              Logged in as <strong>{displayUser(auth.currentUser?.email)}</strong>
+            </Typography>
+          </Grid>
+          <Grid>
+            <UserLogout />
+          </Grid>
+          <input ref={valueRef}></input> //TODO: DELETE ME
+          <button onClick={() => testUploadLead(valueRef.current?.value)}> test</button> //TODO:
+          DELETE ME
         </Grid>
+      )}
 
-        <Grid>
-          <UserLogout />
-        </Grid>
-
-        <input ref={valueRef} ></input> //TODO: DELETE ME
-        <button onClick={() => testUploadLead(valueRef.current?.value)}> test</button> //TODO: DELETE ME
-
-      </Grid>
-      }
-
-      {
-        !isLoggedIn && (
-          <UserLoginForm />
-        )
-      }
+      {!isLoggedIn && <UserLoginForm />}
     </>
   );
 }

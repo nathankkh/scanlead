@@ -32,7 +32,7 @@ function LeadForm({ leadFields, afterSubmit }) {
     e.preventDefault();
     const lead = updateLead();
     try {
-      const docName = getCurrentUserEmail() + '_' + leadFields.id;
+      const docName = getCurrentUserEmail().split('@')[0] + '_' + leadFields.id;
       submitLead(lead, docName).then(afterSubmit);
     } catch (err) {
       console.log(err);

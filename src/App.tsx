@@ -2,7 +2,7 @@ import './App.css';
 import Logo from './components/Logo';
 import UserContainer from './components/user/UserContainer';
 import TabSelector from './components/leads/TabSelector';
-import AuthContext from './AuthContext';
+import AuthContext from './utils/AuthContext';
 import { useState } from 'react';
 
 import { CssVarsProvider } from '@mui/joy/styles';
@@ -16,7 +16,8 @@ function App() {
         <>
           <Logo />
           <UserContainer setIsLoggedIn={setIsLoggedIn} />
-          <hr />
+
+          {isLoggedIn && <hr />}
           {isLoggedIn && <TabSelector />}
         </>
       </AuthContext.Provider>

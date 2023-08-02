@@ -9,16 +9,6 @@ import LeadForm from './results/LeadForm';
 import config from '../../../config';
 
 import Button from '@mui/joy/Button';
-import Typography from '@mui/joy/Typography';
-import Select from '@mui/joy/Select';
-import Option from '@mui/joy/Option';
-import Table from '@mui/joy/Table';
-import Box from '@mui/joy/Box';
-import Grid from '@mui/joy/Grid';
-import Input from '@mui/joy/Input';
-import IconButton from '@mui/joy/IconButton';
-import FormLabel from '@mui/joy/FormLabel';
-import Stack from '@mui/joy/Stack';
 
 interface Lead {
   id: string;
@@ -34,7 +24,7 @@ interface Lead {
   // TODO: Update interface with all relevant fields
 }
 
-function ExistingLeads() {
+function ExistingLeadsBackup() {
   const [leads, setLeads] = useState<Lead[]>([]); // Array containing each lead as an {} object
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -97,8 +87,7 @@ function ExistingLeads() {
 
   function handleEdit(e) {
     Modal.setAppElement(document.getElementById('edit-modal'));
-    // remove one level of parentNode if not using MUI
-    const index = e.target.parentNode.parentNode.parentNode.dataset.index;
+    const index = e.target.parentNode.parentNode.dataset.index;
     setSelectedLead(leads[index]);
     setIsEditModalOpen(true);
   }
@@ -110,8 +99,7 @@ function ExistingLeads() {
 
   function handleDelete(e) {
     Modal.setAppElement(document.getElementById('delete-modal'));
-    // remove one level of parentNode if not using MUI
-    const index = e.target.parentNode.parentNode.parentNode.dataset.index;
+    const index = e.target.parentNode.parentNode.dataset.index;
     setSelectedLead(leads[index]);
     setIsDeleteModalOpen(true);
   }
@@ -140,113 +128,65 @@ function ExistingLeads() {
 
   return (
     <>
-      <Typography level="h3" textAlign="center">
-        Leads
-      </Typography>
-      <Box sx={{ border: 1, borderColor: 'lightgrey', borderRadius: 10, p: 1 }}>
-        <Grid
-          container
-          spacing={1}
-          direction="row"
-          justifyContent="space-between"
-          alignItems="center"
-          sx={{}}
-        >
-          <Grid xs={7}>
-            <FormLabel>Search:</FormLabel>
-            <Input
-              placeholder="Search by Name"
-              variant="outlined"
-              onChange={(e) => setSearchQuery(e.target.value)}
-              endDecorator={<IconButton variant="plain">X</IconButton>} //TODO: IMPLEMENT CLEARING
-
-              /* slotProps={{
-          input: {
-            ref: searchRef,
-          },
-        }} */
-            />
-          </Grid>
-          <Grid xs={5}>
-            <FormLabel>Leads per page:</FormLabel>
-            <FormLabel />
-            <Select
-              defaultValue="10"
-              onChange={(_, value) => {
-                const pageNum = Number(value);
-                setLeadsPerPage(pageNum);
-                setCurrentPage(1);
-              }}
-            >
-              <Option value="1">1</Option>
-              <Option value="10">10</Option>
-              <Option value="20">20</Option>
-              <Option value="50">50</Option>
-              <Option value="100">100</Option>
-            </Select>
-          </Grid>
-        </Grid>
-
-        {(currentLeads.length > 0 && (
-          <Table
-            stripe="even"
-            hoverRow
-            sx={{
-              '& tr > *:first-of-type': {
-                left: 0,
-                textAlign: 'left'
-              },
-              '& tr > *:last-child': {
-                textAlign: 'right'
-              },
-              alignItems: 'center'
+      <h1>LEADS</h1>
+      <div className="lead-box">
+        <div className="lead-box-header">
+          <input
+            id="lead-box-search"
+            placeholder="Search by Name"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+          <label htmlFor="row-count">Leads per page: </label>
+          <select
+            id="row-count"
+            onChange={(e) => {
+              setLeadsPerPage(Number(e.target.value));
+              setCurrentPage(1); // Resets page number to 1 when changing rows to show
             }}
+            value={leadsPerPage}
           >
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th aria-label="last"></th>
-              </tr>
-            </thead>
+            <option value="1">1</option>
+            <option value="10">10</option>
+            <option value="20">20</option>
+            <option value="50">50</option>
+            <option value="100">100</option>
+          </select>
+        </div>
 
-            <tbody>
-              {currentLeads.map((lead, index) => (
-                <tr key={index} data-index={index}>
-                  <td>{properCase(lead.name)}</td>
-                  <td>
-                    <Box sx={{ display: 'flex', gap: 1 }}>
-                      <Button size="sm" variant="outlined" color="neutral" onClick={handleEdit}>
-                        Edit
-                      </Button>
-                      <Button size="sm" variant="soft" color="danger" onClick={handleDelete}>
-                        Delete
-                      </Button>
-                      <div id="delete-modal">
-                        <Modal
-                          isOpen={isDeleteModalOpen}
-                          onRequestClose={cancelDelete}
-                          style={config.modalStyles}
-                          contentLabel="Delete Lead Confirmation"
-                        >
-                          <p>Are you sure you want to delete this lead?</p>
-                          <button onClick={confirmDelete}>Delete</button>
-                          <button onClick={cancelDelete}>Cancel</button>
-                        </Modal>
-                      </div>
-                    </Box>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </Table>
-        )) || (
-          <p>
-            <Typography>No leads yet!</Typography>
-          </p>
-        )}
+        {/* This displays all existing leads in rows. Includes edit and delete buttons for each lead */}
+        <div className="row-container">
+          {(currentLeads.length > 0 &&
+            currentLeads.map((lead, index) => (
+              <div key={lead.id} className="lead-box-row" data-index={index}>
+                {lead.name ? properCase(lead.name) : lead.id}
+                <div className="lead-button-container">
+                  <button className="edit-button" onClick={handleEdit}>
+                    Edit
+                  </button>
+                  <button className="delete-button" onClick={handleDelete}>
+                    Delete
+                  </button>
+                  <div id="delete-modal">
+                    <Modal
+                      isOpen={isDeleteModalOpen}
+                      onRequestClose={cancelDelete}
+                      style={config.modalStyles}
+                      contentLabel="Delete Lead Confirmation"
+                    >
+                      <p>Are you sure you want to delete this lead?</p>
+                      <button onClick={confirmDelete}>Delete</button>
+                      <button onClick={cancelDelete}>Cancel</button>
+                    </Modal>
+                  </div>
+                </div>
+              </div>
+            ))) || <p>No leads yet!</p>}
+        </div>
 
         {/* This displays the page numbers at the bottom of the page */}
-        <Stack id="page-select" direction="row" spacing={1} justifyContent="center">
+
+        <div id="page-select">
           {Array.from(Array(Math.ceil(filteredLeads.length / leadsPerPage)).keys()).map(
             (_, index) => (
               <Button
@@ -259,9 +199,22 @@ function ExistingLeads() {
               </Button>
             )
           )}
-        </Stack>
-      </Box>
 
+          {/* <ul>
+            {Array.from(Array(Math.ceil(filteredLeads.length / leadsPerPage)).keys()).map((_, index) => (
+              <li
+                key={index}
+                className={currentPage === index + 1 ? 'active' : ''}
+                onClick={() => paginate(index + 1)}
+              >
+                {index + 1}
+              </li>
+            ))}
+          </ul> */}
+        </div>
+      </div>
+
+      <hr />
       <div id="edit-modal">
         <Modal
           isOpen={isEditModalOpen}
@@ -279,4 +232,4 @@ function ExistingLeads() {
   );
 }
 
-export default ExistingLeads;
+export default ExistingLeadsBackup;

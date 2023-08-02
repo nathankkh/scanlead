@@ -19,10 +19,10 @@ export default function UserLoginForm() {
 
   async function handleSubmit(e) {
     e.preventDefault();
-
+    setErrorMessage('');
     const formData = new FormData(e.target);
-    const email = validateEmail(formData.get("username"))
-    const password = formData.get("password");
+    const email = validateEmail(formData.get('username'));
+    const password = formData.get('password');
     loginEmailPassword(email, password)
       .then(() => setErrorMessage(''))
       .catch((error) => setErrorMessage(error.message));
@@ -31,32 +31,31 @@ export default function UserLoginForm() {
     <>
       <Box
         sx={{
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
           py: 1
         }}
       >
-
         <Typography level="body2">Sign in to continue</Typography>
       </Box>
       <Box
         sx={{
-          my: "auto",
+          my: 'auto',
           py: 2,
-          display: "flex",
-          flexDirection: "column",
+          display: 'flex',
+          flexDirection: 'column',
           width: 400,
-          maxWidth: "100%",
-          mx: "auto",
-          borderRadius: "sm",
-          "& form": {
-            display: "flex",
-            flexDirection: "column",
+          maxWidth: '100%',
+          mx: 'auto',
+          borderRadius: 'sm',
+          '& form': {
+            display: 'flex',
+            flexDirection: 'column',
             gap: 1
           },
           [`& .${formLabelClasses.asterisk}`]: {
-            visibility: "hidden"
+            visibility: 'hidden'
           }
         }}
       >
@@ -71,15 +70,11 @@ export default function UserLoginForm() {
           </FormControl>
           <FormControl required>
             <FormLabel>Password</FormLabel>
-            <Input
-              name="password"
-              type="password"
-              placeholder="Enter password"
-            />
+            <Input name="password" type="password" placeholder="Enter password" />
           </FormControl>
-          {errorMessage && <p>{errorMessage}</p>}
+          {errorMessage && <Typography color="danger">{errorMessage}</Typography>}
           <Button type="submit">Sign in</Button>
-        </ form>
+        </form>
       </Box>
     </>
   );

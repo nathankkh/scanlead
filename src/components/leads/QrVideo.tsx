@@ -2,6 +2,7 @@ import QrScanner from 'qr-scanner';
 import { useState, useEffect, useRef } from 'react';
 import ResultContainer from './results/ResultContainer';
 import config from '../../../config';
+import Button from '@mui/joy/Button';
 
 function QrVideo() {
   const [qrScanner, setQrScanner] = useState<QrScanner>(); // stores the QrScanner
@@ -64,7 +65,7 @@ function QrVideo() {
 
   return (
     <>
-      <button onClick={() => setCameraActive(!cameraActive)}>{btnText}</button>{' '}
+      <Button onClick={() => setCameraActive(!cameraActive)}>{btnText}</Button>
       <div id="videoContainer" style={{ display: cameraActive ? 'block' : 'none' }}>
         <video ref={videoRef} id="qr-video" width={'250px'} height={'250px'} />
       </div>
