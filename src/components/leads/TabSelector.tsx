@@ -8,12 +8,9 @@ import TabList from '@mui/joy/TabList';
 function TabSelector() {
   const [selectedTab, setSelectedTab] = useState(0);
 
-  /* return (
-    <>
-      <QrVideo />
-      <ExistingLeads />
-    </>
-  ); */
+  function handleTabChange(tabNum) {
+    setSelectedTab(tabNum);
+  }
 
   return (
     <>
@@ -24,12 +21,12 @@ function TabSelector() {
 
       <Tabs
         defaultValue={0}
-        onChange={(_, value) => setSelectedTab(value as number)}
+        onChange={(_, value) => handleTabChange(value)}
         sx={{ position: 'fixed', bottom: 0, left: 0, right: 0 }}
       >
         <TabList variant="soft">
           <Tab variant={selectedTab == 0 ? 'solid' : 'plain'}>Display Leads</Tab>
-          <Tab variant={selectedTab == 1 ? 'solid' : 'plain'}>Scan QR</Tab>
+          <Tab variant={selectedTab == 1 ? 'solid' : 'plain'}>Scan Lead</Tab>
         </TabList>
       </Tabs>
     </>

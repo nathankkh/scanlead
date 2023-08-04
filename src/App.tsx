@@ -18,6 +18,7 @@ function App() {
           <UserContainer setIsLoggedIn={setIsLoggedIn} />
 
           {isLoggedIn && <hr />}
+
           {isLoggedIn && <TabSelector />}
         </>
       </AuthContext.Provider>

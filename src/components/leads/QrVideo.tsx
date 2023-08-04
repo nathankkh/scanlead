@@ -45,7 +45,7 @@ function QrVideo() {
       setBtnText('Cancel');
     } else {
       qrScanner?.stop();
-      setBtnText('Scan QR Code');
+      setBtnText('Click to activate camera');
     }
   }, [cameraActive, qrScanner]);
 

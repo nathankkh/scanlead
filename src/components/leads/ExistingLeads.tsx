@@ -4,9 +4,8 @@ import {
   deleteLead,
   subscribeToCollection
 } from '../../firebase-setup/firebase-functions';
-import Modal from 'react-modal';
+import ReactModal from 'react-modal';
 import LeadForm from './results/LeadForm';
-import config from '../../../config';
 
 import Button from '@mui/joy/Button';
 import Typography from '@mui/joy/Typography';
@@ -19,6 +18,9 @@ import Input from '@mui/joy/Input';
 import IconButton from '@mui/joy/IconButton';
 import FormLabel from '@mui/joy/FormLabel';
 import Stack from '@mui/joy/Stack';
+import Modal from '@mui/joy/Modal';
+import ModalClose from '@mui/joy/ModalClose';
+import ModalDialog from '@mui/joy/ModalDialog';
 
 interface Lead {
   id: string;
@@ -31,7 +33,6 @@ interface Lead {
   temperature: string;
   comments: string;
   timestamp: number;
-  // TODO: Update interface with all relevant fields
 }
 
 function ExistingLeads() {
@@ -41,7 +42,7 @@ function ExistingLeads() {
   const [leadsPerPage, setLeadsPerPage] = useState(10);
   const [selectedLead, setSelectedLead] = useState<Lead>(); // {} object, to be used when editing
   const [currentPage, setCurrentPage] = useState(1);
-  const [searchQuery, setSearchQuery] = useState(''); //TODO: change to useRef
+  const [searchQuery, setSearchQuery] = useState(''); //TODO: consider useRef. Will likely require a button to search; won't have realtime update of displayed leads
 
   const filteredLeads = leads.filter((lead) =>
     lead.name
@@ -69,21 +70,17 @@ function ExistingLeads() {
     );
 
     // Event listener for handling tab close event
-    const handleTabClose = () => {
+    function handleTabClose() {
       unsubscribe();
-    };
+    }
 
-    // Add event listener for beforeunload event (when tab is closed)
+    // Adds event listener for beforeunload event (when tab is closed)
     window.addEventListener('beforeunload', handleTabClose);
     return () => {
       window.removeEventListener('beforeunload', handleTabClose);
       unsubscribe();
     };
   }, []);
-
-  function paginate(pageNumber) {
-    setCurrentPage(pageNumber);
-  }
 
   function properCase(str: string) {
     return str
@@ -96,7 +93,7 @@ function ExistingLeads() {
   }
 
   function handleEdit(e) {
-    Modal.setAppElement(document.getElementById('edit-modal'));
+    ReactModal.setAppElement(document.getElementById('edit-modal'));
     // remove one level of parentNode if not using MUI
     const index = e.target.parentNode.parentNode.parentNode.dataset.index;
     setSelectedLead(leads[index]);
@@ -108,10 +105,11 @@ function ExistingLeads() {
     setSelectedLead(undefined);
   }
 
-  function handleDelete(e) {
-    Modal.setAppElement(document.getElementById('delete-modal'));
+  function handleDeleteClick(e) {
+    ReactModal.setAppElement(document.getElementById('delete-modal'));
     // remove one level of parentNode if not using MUI
     const index = e.target.parentNode.parentNode.parentNode.dataset.index;
+    console.log(leads[index]);
     setSelectedLead(leads[index]);
     setIsDeleteModalOpen(true);
   }
@@ -119,8 +117,10 @@ function ExistingLeads() {
   function confirmDelete() {
     try {
       const id = selectedLead?.id;
+      console.log(id);
       const collectionName = getCurrentUserEmail();
-      const docName = collectionName + '_' + id; //FIXME: Possible bug if document isn't added to firebase correctly.
+      const docName = collectionName.split('@')[0] + '_' + id; //FIXME: Possible bug depending on how a Lead is added to firestore
+      console.log(docName);
       deleteLead(collectionName, docName).then(() => {
         alert('Deleted!');
       });
@@ -136,6 +136,10 @@ function ExistingLeads() {
   function cancelDelete() {
     setSelectedLead(undefined);
     setIsDeleteModalOpen(false);
+  }
+
+  function clearSearch() {
+    setSearchQuery('');
   }
 
   return (
@@ -157,14 +161,19 @@ function ExistingLeads() {
             <Input
               placeholder="Search by Name"
               variant="outlined"
+              value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              endDecorator={<IconButton variant="plain">X</IconButton>} //TODO: IMPLEMENT CLEARING
+              endDecorator={
+                <IconButton variant="plain" onClick={clearSearch}>
+                  X
+                </IconButton>
+              } //TODO: IMPLEMENT CLEARING
 
               /* slotProps={{
-          input: {
-            ref: searchRef,
-          },
-        }} */
+      input: {
+        ref: searchRef,
+      },
+    }} */
             />
           </Grid>
           <Grid xs={5}>
@@ -187,6 +196,7 @@ function ExistingLeads() {
           </Grid>
         </Grid>
 
+        {/* Creates a Table and populates rows based on `currentLeads` */}
         {(currentLeads.length > 0 && (
           <Table
             stripe="even"
@@ -218,21 +228,9 @@ function ExistingLeads() {
                       <Button size="sm" variant="outlined" color="neutral" onClick={handleEdit}>
                         Edit
                       </Button>
-                      <Button size="sm" variant="soft" color="danger" onClick={handleDelete}>
+                      <Button size="sm" variant="soft" color="danger" onClick={handleDeleteClick}>
                         Delete
                       </Button>
-                      <div id="delete-modal">
-                        <Modal
-                          isOpen={isDeleteModalOpen}
-                          onRequestClose={cancelDelete}
-                          style={config.modalStyles}
-                          contentLabel="Delete Lead Confirmation"
-                        >
-                          <p>Are you sure you want to delete this lead?</p>
-                          <button onClick={confirmDelete}>Delete</button>
-                          <button onClick={cancelDelete}>Cancel</button>
-                        </Modal>
-                      </div>
                     </Box>
                   </td>
                 </tr>
@@ -240,9 +238,9 @@ function ExistingLeads() {
             </tbody>
           </Table>
         )) || (
-          <p>
-            <Typography>No leads yet!</Typography>
-          </p>
+          <div>
+            <Typography sx={{ pt: 1 }}>No leads yet!</Typography>
+          </div>
         )}
 
         {/* This displays the page numbers at the bottom of the page */}
@@ -251,7 +249,7 @@ function ExistingLeads() {
             (_, index) => (
               <Button
                 key={index}
-                onClick={() => paginate(index + 1)}
+                onClick={() => setCurrentPage(index + 1)}
                 variant={currentPage === index + 1 ? 'solid' : 'outlined'}
                 color="neutral"
               >
@@ -262,8 +260,8 @@ function ExistingLeads() {
         </Stack>
       </Box>
 
-      <div id="edit-modal">
-        <Modal
+      {/* <div id="edit-modal">
+        <ReactModal
           isOpen={isEditModalOpen}
           onRequestClose={handleCloseEditModal}
           style={config.modalStyles}
@@ -273,8 +271,68 @@ function ExistingLeads() {
           {isEditModalOpen && (
             <LeadForm leadFields={selectedLead} afterSubmit={() => handleCloseEditModal()} />
           )}
-        </Modal>
-      </div>
+        </ReactModal>
+      </div> */}
+
+      <Modal aria-labelledby="edit-modal" open={isEditModalOpen} onClose={handleCloseEditModal}>
+        <ModalDialog>
+          <ModalClose
+            variant="outlined"
+            sx={{
+              top: 'calc(-1/4 * var(--IconButton-size))',
+              right: 'calc(-1/4 * var(--IconButton-size))',
+              boxShadow: '0 2px 12px 0 rgba(0 0 0 / 0.2)',
+              borderRadius: '50%',
+              bgcolor: 'background.surface'
+            }}
+          />
+          {/* <ModalClose />
+          <Typography><b>Edit Lead</b></Typography>
+          <hr /> */}
+          <LeadForm leadFields={selectedLead} afterSubmit={() => handleCloseEditModal()} />
+        </ModalDialog>
+      </Modal>
+      <Modal aria-labelledby="delete-modal" open={isDeleteModalOpen} onClose={cancelDelete}>
+        <ModalDialog
+          role="alertdialog"
+          variant="outlined"
+          sx={(theme) => ({
+            [theme.breakpoints.only('xs')]: {
+              top: 'unset',
+              bottom: 0,
+              left: 0,
+              right: 0,
+              borderRadius: 0,
+              transform: 'none',
+              maxWidth: 'unset'
+            }
+          })}
+        >
+          <Typography id="modal-title" level="h6">
+            <b>Are you sure?</b>
+          </Typography>
+          <Typography>
+            This action cannot be undone! This will permanently delete the lead.
+          </Typography>
+
+          <Box
+            sx={{
+              display: 'flex',
+              justifyContent: 'flex-end',
+              flexDirection: { xs: 'column-reverse', sm: 'row' },
+              gap: 1,
+              pt: 1.5
+            }}
+          >
+            <Button onClick={cancelDelete} size="md" variant="outlined" color="neutral">
+              Cancel
+            </Button>
+            <Button onClick={confirmDelete} size="md" variant="solid" color="danger">
+              Delete
+            </Button>
+          </Box>
+        </ModalDialog>
+      </Modal>
     </>
   );
 }

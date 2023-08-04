@@ -31,6 +31,14 @@ export function getCurrentUserEmail() {
   }
 }
 
+export function getCurrentUser() {
+  if (auth.currentUser.email) {
+    return auth.currentUser.email.split('@')[0];
+  } else {
+    throw new Error('No email found');
+  }
+}
+
 function isUserSignedIn() {
   return !!auth.currentUser;
 }
