@@ -3,19 +3,17 @@ import UserLogout from './UserLogout';
 import { useContext } from 'react';
 import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from '../../firebase-setup/firebase-functions';
-import { useRef } from 'react';
 import AuthContext from '../../utils/AuthContext';
-import config from '../../../config';
-import { lookupValue, submitLead } from '../../firebase-setup/firebase-functions'; //TODO: DELETE ME
+/* import { lookupValue, submitLead } from '../../firebase-setup/firebase-functions'; //TODO: DELETE ME */
 
 import Grid from '@mui/joy/Grid';
 import Typography from '@mui/joy/Typography';
 
-export default function UserContainer({ setIsLoggedIn }) {
+export default function UserContainer({ setIsLoggedIn, showUser }) {
   const { isLoggedIn } = useContext(AuthContext);
-  const valueRef = useRef<HTMLInputElement>(null);
+  /* const valueRef = useRef<HTMLInputElement>(null); */
 
-  async function testUploadLead(id) {
+  /* async function testUploadLead(id) {
     //TODO: DELETE ME
     const attendee = (await lookupValue(id, config.lookupCollection, config.lookupField))[0];
     const docName = 'hh4@headhunt.com.sg_' + attendee.id;
@@ -27,7 +25,7 @@ export default function UserContainer({ setIsLoggedIn }) {
     } catch (err) {
       alert(err);
     }
-  }
+  } */
 
   const users = [
     'Aalto',
@@ -112,7 +110,7 @@ export default function UserContainer({ setIsLoggedIn }) {
 
   return (
     <>
-      {isLoggedIn && (
+      {isLoggedIn && showUser && (
         <Grid
           container
           alignItems={'center'}
@@ -127,9 +125,9 @@ export default function UserContainer({ setIsLoggedIn }) {
           <Grid>
             <UserLogout />
           </Grid>
-          <input ref={valueRef}></input> //TODO: DELETE ME
+          {/* <input ref={valueRef}></input> //TODO: DELETE ME
           <button onClick={() => testUploadLead(valueRef.current?.value)}> test</button> //TODO:
-          DELETE ME
+          DELETE ME */}
         </Grid>
       )}
 

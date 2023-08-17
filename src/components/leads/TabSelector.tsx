@@ -5,11 +5,12 @@ import Tab from '@mui/joy/Tab';
 import Tabs from '@mui/joy/Tabs';
 import TabList from '@mui/joy/TabList';
 
-function TabSelector() {
-  const [selectedTab, setSelectedTab] = useState(0);
+function TabSelector({ setShowUser }) {
+  const [selectedTab, setSelectedTab] = useState(0); // 0 for existing leads, 1 for camera
 
   function handleTabChange(tabNum) {
     setSelectedTab(tabNum);
+    setShowUser(tabNum === 0);
   }
 
   return (

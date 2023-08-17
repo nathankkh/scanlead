@@ -4,7 +4,7 @@
 const logger = require('firebase-functions/logger');
 const functions = require('firebase-functions');
 const { initializeApp } = require('firebase-admin/app');
-const { getFirestore, FieldValue } = require('firebase-admin/firestore');
+const { getFirestore } = require('firebase-admin/firestore');
 const { SecretManagerServiceClient } = require('@google-cloud/secret-manager');
 const fetch = require('node-fetch');
 
@@ -78,6 +78,7 @@ async function getData(pageNumber = 1) {
     return data;
   } catch (error) {
     logger.error(error);
+    logger.error('Error in getData()');
   }
 }
 
@@ -148,6 +149,7 @@ async function getNewAttendees(collectionName) {
     return [result, lastCreated];
   } catch (error) {
     logger.error(error);
+    logger.error('Error in getNewAttendees()');
   }
 }
 
@@ -184,6 +186,7 @@ async function uploadBatch(collectionName, dataArray, lastUpdateTime, batchSize 
       logger.info('batched');
     } catch (err) {
       logger.error(err);
+      logger.error("Couldn't batch");
     }
   }
 }

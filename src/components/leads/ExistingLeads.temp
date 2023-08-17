@@ -4,7 +4,6 @@ import {
   deleteLead,
   subscribeToCollection
 } from '../../firebase-setup/firebase-functions';
-import Modal from 'react-modal';
 import LeadForm from './results/LeadForm';
 import config from '../../../config';
 
@@ -59,9 +58,9 @@ function ExistingLeadsBackup() {
     );
 
     // Event listener for handling tab close event
-    const handleTabClose = () => {
+    function handleTabClose() {
       unsubscribe();
-    };
+    }
 
     // Add event listener for beforeunload event (when tab is closed)
     window.addEventListener('beforeunload', handleTabClose);

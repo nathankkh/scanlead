@@ -4,7 +4,6 @@ import {
   deleteLead,
   subscribeToCollection
 } from '../../firebase-setup/firebase-functions';
-import ReactModal from 'react-modal';
 import LeadForm from './results/LeadForm';
 
 import Button from '@mui/joy/Button';
@@ -93,7 +92,6 @@ function ExistingLeads() {
   }
 
   function handleEdit(e) {
-    ReactModal.setAppElement(document.getElementById('edit-modal'));
     // remove one level of parentNode if not using MUI
     const index = e.target.parentNode.parentNode.parentNode.dataset.index;
     setSelectedLead(leads[index]);
@@ -106,7 +104,6 @@ function ExistingLeads() {
   }
 
   function handleDeleteClick(e) {
-    ReactModal.setAppElement(document.getElementById('delete-modal'));
     // remove one level of parentNode if not using MUI
     const index = e.target.parentNode.parentNode.parentNode.dataset.index;
     console.log(leads[index]);
@@ -170,10 +167,10 @@ function ExistingLeads() {
               } //TODO: IMPLEMENT CLEARING
 
               /* slotProps={{
-      input: {
-        ref: searchRef,
-      },
-    }} */
+    input: {
+      ref: searchRef,
+    },
+  }} */
             />
           </Grid>
           <Grid xs={5}>
@@ -222,7 +219,7 @@ function ExistingLeads() {
             <tbody>
               {currentLeads.map((lead, index) => (
                 <tr key={index} data-index={index}>
-                  <td>{properCase(lead.name)}</td>
+                  <td>{lead.name != '' ? properCase(lead.name) : lead.id}</td>
                   <td>
                     <Box sx={{ display: 'flex', gap: 1 }}>
                       <Button size="sm" variant="outlined" color="neutral" onClick={handleEdit}>

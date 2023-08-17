@@ -67,7 +67,8 @@ function QrVideo() {
     <>
       <Button onClick={() => setCameraActive(!cameraActive)}>{btnText}</Button>
       <div id="videoContainer" style={{ display: cameraActive ? 'block' : 'none' }}>
-        <video ref={videoRef} id="qr-video" width={'250px'} height={'250px'} />
+        <br />
+        <video ref={videoRef} id="qr-video" width={'100%'} height={'100%'} />
       </div>
       <br />
       {hasScanned && <ResultContainer result={qrResult} resetState={resetState} />}{' '}
