@@ -34,11 +34,11 @@ interface Lead {
   timestamp: number;
 }
 
-function ExistingLeads() {
+function ExistingLeads({ leadsPerPage, setLeadsPerPage }) {
   const [leads, setLeads] = useState<Lead[]>([]); // Array containing each lead as an {} object
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [leadsPerPage, setLeadsPerPage] = useState(10);
+  // const [leadsPerPage, setLeadsPerPage] = useState(10);
   const [selectedLead, setSelectedLead] = useState<Lead>(); // {} object, to be used when editing
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState(''); //TODO: consider useRef. Will likely require a button to search; won't have realtime update of displayed leads
@@ -164,27 +164,21 @@ function ExistingLeads() {
                 <IconButton variant="plain" onClick={clearSearch}>
                   X
                 </IconButton>
-              } //TODO: IMPLEMENT CLEARING
-
-              /* slotProps={{
-    input: {
-      ref: searchRef,
-    },
-  }} */
+              }
             />
           </Grid>
+
           <Grid xs={5}>
             <FormLabel>Leads per page:</FormLabel>
             <FormLabel />
             <Select
-              defaultValue="10"
+              defaultValue={leadsPerPage.toString()}
               onChange={(_, value) => {
                 const pageNum = Number(value);
                 setLeadsPerPage(pageNum);
                 setCurrentPage(1);
               }}
             >
-              <Option value="1">1</Option>
               <Option value="10">10</Option>
               <Option value="20">20</Option>
               <Option value="50">50</Option>
@@ -221,7 +215,7 @@ function ExistingLeads() {
                 <tr key={index} data-index={index}>
                   <td>{lead.name != '' ? properCase(lead.name) : lead.id}</td>
                   <td>
-                    <Box sx={{ display: 'flex', gap: 1 }}>
+                    <Box sx={{ display: 'flex', gap: 1, justifyContent: 'right' }}>
                       <Button size="sm" variant="outlined" color="neutral" onClick={handleEdit}>
                         Edit
                       </Button>
@@ -241,7 +235,13 @@ function ExistingLeads() {
         )}
 
         {/* This displays the page numbers at the bottom of the page */}
-        <Stack id="page-select" direction="row" spacing={1} justifyContent="center">
+        <Stack
+          id="page-select"
+          direction="row"
+          spacing={1}
+          justifyContent="center"
+          sx={{ flexWrap: 'wrap', gap: 1 }}
+        >
           {Array.from(Array(Math.ceil(filteredLeads.length / leadsPerPage)).keys()).map(
             (_, index) => (
               <Button
@@ -257,20 +257,6 @@ function ExistingLeads() {
         </Stack>
       </Box>
 
-      {/* <div id="edit-modal">
-        <ReactModal
-          isOpen={isEditModalOpen}
-          onRequestClose={handleCloseEditModal}
-          style={config.modalStyles}
-          contentLabel="Edit Lead"
-        >
-          <button onClick={handleCloseEditModal}>X</button>
-          {isEditModalOpen && (
-            <LeadForm leadFields={selectedLead} afterSubmit={() => handleCloseEditModal()} />
-          )}
-        </ReactModal>
-      </div> */}
-
       <Modal aria-labelledby="edit-modal" open={isEditModalOpen} onClose={handleCloseEditModal}>
         <ModalDialog>
           <ModalClose
@@ -283,9 +269,7 @@ function ExistingLeads() {
               bgcolor: 'background.surface'
             }}
           />
-          {/* <ModalClose />
-          <Typography><b>Edit Lead</b></Typography>
-          <hr /> */}
+
           <LeadForm leadFields={selectedLead} afterSubmit={() => handleCloseEditModal()} />
         </ModalDialog>
       </Modal>

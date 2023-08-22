@@ -7,7 +7,7 @@ import TabList from '@mui/joy/TabList';
 
 function TabSelector({ setShowUser }) {
   const [selectedTab, setSelectedTab] = useState(0); // 0 for existing leads, 1 for camera
-
+  const [leadsPerPage, setLeadsPerPage] = useState(10); // 10 leads per page
   function handleTabChange(tabNum) {
     setSelectedTab(tabNum);
     setShowUser(tabNum === 0);
@@ -16,7 +16,9 @@ function TabSelector({ setShowUser }) {
   return (
     <>
       <div style={{ paddingBottom: '4rem' }}>
-        {selectedTab === 0 && <ExistingLeads />}
+        {selectedTab === 0 && (
+          <ExistingLeads leadsPerPage={leadsPerPage} setLeadsPerPage={setLeadsPerPage} />
+        )}
         {selectedTab === 1 && <QrVideo />}
       </div>
 

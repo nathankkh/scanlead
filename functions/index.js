@@ -12,6 +12,7 @@ const app = initializeApp();
 const db = getFirestore(app);
 
 const leadFields = {
+  created: '', // timestamp
   id: '',
   name: '',
   email: '',
@@ -89,6 +90,7 @@ async function getData(pageNumber = 1) {
  */
 function populateAttendeeTemplate(attendee) {
   const template = { ...leadFields };
+  template.created = new Date(attendee.created).getTime();
   template.id = attendee.order_id + attendee.id + '001';
   template.name = attendee.profile.name;
   template.email = attendee.profile.email;
@@ -196,23 +198,27 @@ async function uploadBatch(collectionName, dataArray, lastUpdateTime, batchSize 
  * Used for testing purposes.
  * @deprecated
  */
-exports.uploadEB = functions.region('asia-southeast1').https.onRequest(async (req, res) => {
-  const data = await getNewAttendees(uploadCollection);
-  if (data) {
-    uploadBatch(uploadCollection, data[0], data[1]);
-    logger.info('done');
-    res.send('done');
-  } else {
-    logger.info('No new attendees'); // TODO: ERROR HANDLING
-    res.send('error');
-  }
-});
+exports.uploadEB = functions
+  .region('asia-southeast1')
+  .runWith({ timeoutSeconds: 310 })
+  .https.onRequest(async (req, res) => {
+    const data = await getNewAttendees(uploadCollection);
+    if (data) {
+      uploadBatch(uploadCollection, data[0], data[1]);
+      logger.info('done');
+      res.send('done');
+    } else {
+      logger.info('No new attendees'); // TODO: ERROR HANDLING
+      res.send('error');
+    }
+  });
 
 /**
  * Uploads all new attendees from eventbrite every minute.
  */
 exports.uploadEBpubSub = functions
   .region('asia-southeast1')
+  .runWith({ memory: '1GB', timeoutSeconds: 180 })
   .pubsub.schedule('every minute')
   .onRun(async () => {
     const data = await getNewAttendees(uploadCollection);

@@ -27,4 +27,4 @@ dist-ssr
 .firebase/*
 
 src/firebase-setup/firebase-config.js
-todolist
+src/components/backups/*

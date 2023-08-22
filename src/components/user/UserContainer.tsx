@@ -11,21 +11,6 @@ import Typography from '@mui/joy/Typography';
 
 export default function UserContainer({ setIsLoggedIn, showUser }) {
   const { isLoggedIn } = useContext(AuthContext);
-  /* const valueRef = useRef<HTMLInputElement>(null); */
-
-  /* async function testUploadLead(id) {
-    //TODO: DELETE ME
-    const attendee = (await lookupValue(id, config.lookupCollection, config.lookupField))[0];
-    const docName = 'hh4@headhunt.com.sg_' + attendee.id;
-    attendee['timestamp'] = Date.now();
-    try {
-      submitLead(attendee, docName).then(() => {
-        console.log('Lead submitted!');
-      });
-    } catch (err) {
-      alert(err);
-    }
-  } */
 
   const users = [
     'Aalto',
@@ -89,7 +74,8 @@ export default function UserContainer({ setIsLoggedIn, showUser }) {
     'HH1',
     'HH2',
     'HH3',
-    'HH4'
+    'HH4',
+    'SUSSSHBS'
   ];
 
   function displayUser(email) {
