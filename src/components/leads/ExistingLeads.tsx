@@ -1,14 +1,28 @@
 import { useState, useEffect } from 'react';
-import { createPortal } from 'react-dom';
 import {
   getCurrentUserEmail,
   deleteLead,
   subscribeToCollection
 } from '../../firebase-setup/firebase-functions';
-import LeadsEditModal from './LeadsEditModal';
+import LeadForm from './results/LeadForm';
+
+import Button from '@mui/joy/Button';
+import Typography from '@mui/joy/Typography';
+import Select from '@mui/joy/Select';
+import Option from '@mui/joy/Option';
+import Table from '@mui/joy/Table';
+import Box from '@mui/joy/Box';
+import Grid from '@mui/joy/Grid';
+import Input from '@mui/joy/Input';
+import IconButton from '@mui/joy/IconButton';
+import FormLabel from '@mui/joy/FormLabel';
+import Stack from '@mui/joy/Stack';
+import Modal from '@mui/joy/Modal';
+import ModalClose from '@mui/joy/ModalClose';
+import ModalDialog from '@mui/joy/ModalDialog';
 
 interface Lead {
-  id: string | number;
+  id: string;
   name: string;
   email: string;
   phone: string | number;
@@ -18,19 +32,21 @@ interface Lead {
   temperature: string;
   comments: string;
   timestamp: number;
-  // TODO: Update interface with all relevant fields
 }
 
-function ExistingLeads() {
+function ExistingLeads({ leadsPerPage, setLeadsPerPage }) {
   const [leads, setLeads] = useState<Lead[]>([]); // Array containing each lead as an {} object
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [leadsPerPage, setLeadsPerPage] = useState(12);
-  const [selectedLead, setSelectedLead] = useState<Lead>(); // {} object, to be used when editing / deleting
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  // const [leadsPerPage, setLeadsPerPage] = useState(10);
+  const [selectedLead, setSelectedLead] = useState<Lead>(); // {} object, to be used when editing
   const [currentPage, setCurrentPage] = useState(1);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState(''); //TODO: consider useRef. Will likely require a button to search; won't have realtime update of displayed leads
 
   const filteredLeads = leads.filter((lead) =>
-    lead.name.toLowerCase().includes(searchQuery.toLowerCase())
+    lead.name
+      ? lead.name.toLowerCase().includes(searchQuery.toLowerCase())
+      : lead.id.includes(searchQuery)
   );
   const indexOfLastLead = currentPage * leadsPerPage;
   const indexOfFirstLead = indexOfLastLead - leadsPerPage;
@@ -38,12 +54,13 @@ function ExistingLeads() {
 
   useEffect(() => {
     // Creates a listener for a given firebase collection. Returns an unsubscribe function, which runs on component unmount.
-    //TODO: Consider running only on refresh button click; update ONLY with changes
     const unsubscribe = subscribeToCollection(
       getCurrentUserEmail(),
       (querySnapshot) => {
-        const existingLeads = querySnapshot.docs.map((snapshot) => snapshot.data());
-        setLeads(existingLeads);
+        if (!querySnapshot.empty) {
+          const existingLeads = querySnapshot.docs.map((snapshot) => snapshot.data());
+          setLeads(existingLeads);
+        }
       },
       (error) => {
         console.log(error);
@@ -52,22 +69,17 @@ function ExistingLeads() {
     );
 
     // Event listener for handling tab close event
-    const handleTabClose = () => {
+    function handleTabClose() {
       unsubscribe();
-    };
+    }
 
-    // Add event listener for beforeunload event (when tab is closed)
+    // Adds event listener for beforeunload event (when tab is closed)
     window.addEventListener('beforeunload', handleTabClose);
-
     return () => {
       window.removeEventListener('beforeunload', handleTabClose);
       unsubscribe();
     };
   }, []);
-
-  function paginate(pageNumber) {
-    setCurrentPage(pageNumber);
-  }
 
   function properCase(str: string) {
     return str
@@ -80,109 +92,228 @@ function ExistingLeads() {
   }
 
   function handleEdit(e) {
-    const index = e.target.parentNode.parentNode.dataset.index;
+    // remove one level of parentNode if not using MUI
+    const index = e.target.parentNode.parentNode.parentNode.dataset.index;
     setSelectedLead(leads[index]);
-    setIsModalOpen(true);
+    setIsEditModalOpen(true);
   }
 
-  function handleCloseModal() {
-    setIsModalOpen(false);
+  function handleCloseEditModal() {
+    setIsEditModalOpen(false);
     setSelectedLead(undefined);
   }
 
-  function handleDelete(e) {
-    const index = e.target.parentNode.parentNode.dataset.index;
-    const id = leads[index].id;
-    const collectionName = getCurrentUserEmail();
-    const docName = collectionName + '_' + id; //FIXME: Possible bug if document isn't added to firebase correctly.
-    console.log(docName);
-    deleteLead(collectionName, docName).then(() => {
-      alert('deleted');
-    }); //TODO: add toast message
+  function handleDeleteClick(e) {
+    // remove one level of parentNode if not using MUI
+    const index = e.target.parentNode.parentNode.parentNode.dataset.index;
+    console.log(leads[index]);
+    setSelectedLead(leads[index]);
+    setIsDeleteModalOpen(true);
+  }
+
+  function confirmDelete() {
+    try {
+      const id = selectedLead?.id;
+      console.log(id);
+      const collectionName = getCurrentUserEmail();
+      const docName = collectionName.split('@')[0] + '_' + id; //FIXME: Possible bug depending on how a Lead is added to firestore
+      console.log(docName);
+      deleteLead(collectionName, docName).then(() => {
+        alert('Deleted!');
+      });
+    } catch (error) {
+      console.log(error);
+      alert('Error deleting, please try again!');
+    }
+
+    setSelectedLead(undefined);
+    setIsDeleteModalOpen(false);
+  }
+
+  function cancelDelete() {
+    setSelectedLead(undefined);
+    setIsDeleteModalOpen(false);
+  }
+
+  function clearSearch() {
+    setSearchQuery('');
   }
 
   return (
     <>
-      <h1>LEADS</h1>
-      <div className="lead-box">
-        <div className="lead-box-header">
-          <input
-            id="lead-box-search"
-            placeholder="Search by Name"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-          <label htmlFor="row-count">Rows to show: </label>
-          <select
-            id="row-count"
-            onChange={(e) => {
-              setLeadsPerPage(Number(e.target.value));
-              setCurrentPage(1); // Reset page number to 1 when changing rows to show
-            }}
-            value={leadsPerPage}
-          >
-            <option value="10">10</option>
-            <option value="20">20</option>
-            <option value="50">50</option>
-            <option value="100">100</option>
-          </select>
-        </div>
+      <Typography level="h3" textAlign="center">
+        Leads
+      </Typography>
+      <Box sx={{ border: 1, borderColor: 'lightgrey', borderRadius: 10, p: 1 }}>
+        <Grid
+          container
+          spacing={1}
+          direction="row"
+          justifyContent="space-between"
+          alignItems="center"
+          sx={{}}
+        >
+          <Grid xs={7}>
+            <FormLabel>Search:</FormLabel>
+            <Input
+              placeholder="Search by Name"
+              variant="outlined"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              endDecorator={
+                <IconButton variant="plain" onClick={clearSearch}>
+                  X
+                </IconButton>
+              }
+            />
+          </Grid>
 
-        {/* This displays all existing leads in rows. Includes edit and delete buttons for each lead */}
-        <div className="row-container">
-          {(currentLeads.length > 0 &&
-            currentLeads.map((lead, index) => (
-              <div key={lead.id} className="lead-box-row" data-index={index}>
-                {properCase(lead.name)} - {properCase(lead.experience)}
-                <div className="lead-button-container">
-                  <button className="edit-button" onClick={handleEdit}>
-                    Edit
-                  </button>
-                  <button className="delete-button" onClick={handleDelete}>
-                    Delete
-                  </button>
-                </div>
-              </div>
-            ))) || <p>No leads yet!</p>}
-        </div>
+          <Grid xs={5}>
+            <FormLabel>Leads per page:</FormLabel>
+            <FormLabel />
+            <Select
+              defaultValue={leadsPerPage.toString()}
+              onChange={(_, value) => {
+                const pageNum = Number(value);
+                setLeadsPerPage(pageNum);
+                setCurrentPage(1);
+              }}
+            >
+              <Option value="10">10</Option>
+              <Option value="20">20</Option>
+              <Option value="50">50</Option>
+              <Option value="100">100</Option>
+            </Select>
+          </Grid>
+        </Grid>
+
+        {/* Creates a Table and populates rows based on `currentLeads` */}
+        {(currentLeads.length > 0 && (
+          <Table
+            stripe="even"
+            hoverRow
+            sx={{
+              '& tr > *:first-of-type': {
+                left: 0,
+                textAlign: 'left'
+              },
+              '& tr > *:last-child': {
+                textAlign: 'right'
+              },
+              alignItems: 'center'
+            }}
+          >
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th aria-label="last"></th>
+              </tr>
+            </thead>
+
+            <tbody>
+              {currentLeads.map((lead, index) => (
+                <tr key={index} data-index={index}>
+                  <td>{lead.name != '' ? properCase(lead.name) : lead.id}</td>
+                  <td>
+                    <Box sx={{ display: 'flex', gap: 1, justifyContent: 'right' }}>
+                      <Button size="sm" variant="outlined" color="neutral" onClick={handleEdit}>
+                        Edit
+                      </Button>
+                      <Button size="sm" variant="soft" color="danger" onClick={handleDeleteClick}>
+                        Delete
+                      </Button>
+                    </Box>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </Table>
+        )) || (
+          <div>
+            <Typography sx={{ pt: 1 }}>No leads yet!</Typography>
+          </div>
+        )}
 
         {/* This displays the page numbers at the bottom of the page */}
-        <div className="page-select">
-          <ul>
-            {Array(Math.ceil(filteredLeads.length / leadsPerPage)).map((_, index) => (
-              <li
+        <Stack
+          id="page-select"
+          direction="row"
+          spacing={1}
+          justifyContent="center"
+          sx={{ flexWrap: 'wrap', gap: 1 }}
+        >
+          {Array.from(Array(Math.ceil(filteredLeads.length / leadsPerPage)).keys()).map(
+            (_, index) => (
+              <Button
                 key={index}
-                className={currentPage === index + 1 ? 'active' : ''}
-                onClick={() => paginate(index + 1)}
+                onClick={() => setCurrentPage(index + 1)}
+                variant={currentPage === index + 1 ? 'solid' : 'outlined'}
+                color="neutral"
               >
                 {index + 1}
-              </li>
-            ))}
-          </ul>
-        </div>
-      </div>
+              </Button>
+            )
+          )}
+        </Stack>
+      </Box>
 
-      <hr />
-      {/* <LeadsEditModal isOpen={isModalOpen} onClose={handleCloseModal} lead={selectedLead} /> */}
-      {/*       <Modal
-        isOpen={isModalOpen}
-        closeTimeoutMS={200}
-        onRequestClose={handleCloseModal}
-        shouldCloseOnOverlayClick={true}
-      >
-        <h1>Modal</h1>
-        <LeadForm
-          leadFields={selectedLead}
-          afterSubmit={() => handleCloseModal()} />
-      </Modal> */}
+      <Modal aria-labelledby="edit-modal" open={isEditModalOpen} onClose={handleCloseEditModal}>
+        <ModalDialog>
+          <ModalClose
+            variant="outlined"
+            sx={{
+              top: 'calc(-1/4 * var(--IconButton-size))',
+              right: 'calc(-1/4 * var(--IconButton-size))',
+              boxShadow: '0 2px 12px 0 rgba(0 0 0 / 0.2)',
+              borderRadius: '50%',
+              bgcolor: 'background.surface'
+            }}
+          />
 
-      {isModalOpen &&
-        createPortal(
-          <div className="modal">
-            <LeadsEditModal isOpen={isModalOpen} onClose={handleCloseModal} lead={selectedLead} />
-          </div>,
-          document.body
-        )}
+          <LeadForm leadFields={selectedLead} afterSubmit={() => handleCloseEditModal()} />
+        </ModalDialog>
+      </Modal>
+      <Modal aria-labelledby="delete-modal" open={isDeleteModalOpen} onClose={cancelDelete}>
+        <ModalDialog
+          role="alertdialog"
+          variant="outlined"
+          sx={(theme) => ({
+            [theme.breakpoints.only('xs')]: {
+              top: 'unset',
+              bottom: 0,
+              left: 0,
+              right: 0,
+              borderRadius: 0,
+              transform: 'none',
+              maxWidth: 'unset'
+            }
+          })}
+        >
+          <Typography id="modal-title" level="h6">
+            <b>Are you sure?</b>
+          </Typography>
+          <Typography>
+            This action cannot be undone! This will permanently delete the lead.
+          </Typography>
+
+          <Box
+            sx={{
+              display: 'flex',
+              justifyContent: 'flex-end',
+              flexDirection: { xs: 'column-reverse', sm: 'row' },
+              gap: 1,
+              pt: 1.5
+            }}
+          >
+            <Button onClick={cancelDelete} size="md" variant="outlined" color="neutral">
+              Cancel
+            </Button>
+            <Button onClick={confirmDelete} size="md" variant="solid" color="danger">
+              Delete
+            </Button>
+          </Box>
+        </ModalDialog>
+      </Modal>
     </>
   );
 }

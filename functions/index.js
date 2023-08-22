@@ -4,7 +4,7 @@
 const logger = require('firebase-functions/logger');
 const functions = require('firebase-functions');
 const { initializeApp } = require('firebase-admin/app');
-const { getFirestore, FieldValue } = require('firebase-admin/firestore');
+const { getFirestore } = require('firebase-admin/firestore');
 const { SecretManagerServiceClient } = require('@google-cloud/secret-manager');
 const fetch = require('node-fetch');
 
@@ -12,6 +12,7 @@ const app = initializeApp();
 const db = getFirestore(app);
 
 const leadFields = {
+  created: '', // timestamp
   id: '',
   name: '',
   email: '',
@@ -32,7 +33,7 @@ const uploadCollection = 'eventbrite';
  */
 async function getEBKey() {
   const client = new SecretManagerServiceClient();
-  const name = 'projects/292470144917/secrets/EB_key/versions/latest';
+  const name = 'projects/292470144917/secrets/EB_key/versions/2';
 
   const [version] = await client.accessSecretVersion({ name });
   const secretValue = version.payload.data.toString();
@@ -78,6 +79,7 @@ async function getData(pageNumber = 1) {
     return data;
   } catch (error) {
     logger.error(error);
+    logger.error('Error in getData()');
   }
 }
 
@@ -88,14 +90,21 @@ async function getData(pageNumber = 1) {
  */
 function populateAttendeeTemplate(attendee) {
   const template = { ...leadFields };
+  template.created = new Date(attendee.created).getTime();
   template.id = attendee.order_id + attendee.id + '001';
   template.name = attendee.profile.name;
   template.email = attendee.profile.email;
   template.phone = attendee.profile.cell_phone;
-  // template.jobTitle = obj.profile.job_title;
-  // FIXME: Modify based on actual form
-  /* template.experience = obj.answers[0].answer; // can match question_id too 
-  template.fieldOfInterest = obj.answers[1].answer; */
+  template.jobTitle = attendee.profile.job_title;
+  /*
+    0: Where did you hear of this event
+    1: Work experience (years)
+    2: Field of interest
+    3: interested sessions
+    4: T&C
+  */
+  template.experience = attendee.answers[1].answer; // can match question_id too
+  template.fieldOfInterest = attendee.answers[2].answer;
   return template;
 }
 
@@ -119,10 +128,9 @@ async function getNewAttendees(collectionName) {
     const initialData = await getData(currentPage);
     const totalPages = initialData.pagination.page_count;
 
-    // iterate through pages from the back
+    // iterate through pages from the back. Note that this prevents the use of continuation tokens
     for (currentPage = totalPages; currentPage >= 1; currentPage--) {
       const data = await getData(currentPage);
-      /* const continuationToken = data.pagination.continuation; */
       const filteredAttendees = data.attendees.filter((attendee) => {
         return new Date(attendee.created).getTime() > lastUpdateTime && attendee.cancelled == false;
       });
@@ -143,6 +151,7 @@ async function getNewAttendees(collectionName) {
     return [result, lastCreated];
   } catch (error) {
     logger.error(error);
+    logger.error('Error in getNewAttendees()');
   }
 }
 
@@ -173,13 +182,13 @@ async function uploadBatch(collectionName, dataArray, lastUpdateTime, batchSize 
 
       batch.set(lastUpdateRef, {
         timestamp: lastUpdateTime,
-        timesUpdated: FieldValue.increment(1),
         'timestamp datetime': new Date(lastUpdateTime)
       });
       batch.commit();
       logger.info('batched');
     } catch (err) {
       logger.error(err);
+      logger.error("Couldn't batch");
     }
   }
 }
@@ -189,23 +198,27 @@ async function uploadBatch(collectionName, dataArray, lastUpdateTime, batchSize 
  * Used for testing purposes.
  * @deprecated
  */
-exports.uploadEB = functions.region('asia-southeast1').https.onRequest(async (req, res) => {
-  const data = await getNewAttendees(uploadCollection);
-  if (data) {
-    uploadBatch(uploadCollection, data[0], data[1]);
-    logger.info('done');
-    res.send('done');
-  } else {
-    logger.info('No new attendees'); // TODO: ERROR HANDLING
-    res.send('error');
-  }
-});
+exports.uploadEB = functions
+  .region('asia-southeast1')
+  .runWith({ timeoutSeconds: 310 })
+  .https.onRequest(async (req, res) => {
+    const data = await getNewAttendees(uploadCollection);
+    if (data) {
+      uploadBatch(uploadCollection, data[0], data[1]);
+      logger.info('done');
+      res.send('done');
+    } else {
+      logger.info('No new attendees'); // TODO: ERROR HANDLING
+      res.send('error');
+    }
+  });
 
 /**
  * Uploads all new attendees from eventbrite every minute.
  */
 exports.uploadEBpubSub = functions
   .region('asia-southeast1')
+  .runWith({ memory: '1GB', timeoutSeconds: 180 })
   .pubsub.schedule('every minute')
   .onRun(async () => {
     const data = await getNewAttendees(uploadCollection);

@@ -11,12 +11,14 @@
     "prepare": "husky install"
   },
   "dependencies": {
+    "@emotion/react": "^11.11.1",
+    "@emotion/styled": "^11.11.0",
     "@google-cloud/secret-manager": "^4.2.2",
+    "@mui/joy": "^5.0.0-alpha.89",
     "firebase": "^9.22.0",
     "qr-scanner": "^1.4.2",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "react-modal": "^3.16.1"
+    "react-dom": "^18.2.0"
   },
   "devDependencies": {
     "@types/react": "^18.0.28",

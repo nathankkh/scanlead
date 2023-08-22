@@ -2,6 +2,7 @@ import QrScanner from 'qr-scanner';
 import { useState, useEffect, useRef } from 'react';
 import ResultContainer from './results/ResultContainer';
 import config from '../../../config';
+import Button from '@mui/joy/Button';
 
 function QrVideo() {
   const [qrScanner, setQrScanner] = useState<QrScanner>(); // stores the QrScanner
@@ -10,8 +11,9 @@ function QrVideo() {
   const [qrResult, setQrResult] = useState<string>(); // stores result from scanner
   const videoRef = useRef<HTMLVideoElement>(null);
 
+  const [btnText, setBtnText] = useState('Scan QR Code');
+
   useEffect(() => {
-    // REFACTOR: Run on app initialisation instead of on component mount
     // initialise qr scanner
     const video = videoRef.current;
     if (!video) {
@@ -29,7 +31,6 @@ function QrVideo() {
     console.log('initialised qr scanner');
 
     return () => {
-      // REFACTOR: Run on app unmount instead of on component unmount
       // clean up
       scanner.destroy();
       console.log('destroyed qr scanner');
@@ -39,9 +40,12 @@ function QrVideo() {
   useEffect(() => {
     // toggles QR scanner on/off
     if (cameraActive) {
+      resetState();
       qrScanner?.start();
+      setBtnText('Cancel');
     } else {
       qrScanner?.stop();
+      setBtnText('Click to activate camera');
     }
   }, [cameraActive, qrScanner]);
 
@@ -51,16 +55,24 @@ function QrVideo() {
     setHasScanned(true);
   }
 
+  /**
+   * Hides the leadForm by setting hasScanned and QR result to an undefined value.
+   */
+  function resetState() {
+    setHasScanned(false);
+    setQrResult(undefined);
+  }
+
   return (
     <>
-      <button onClick={() => setCameraActive(true)}>Scan a QR code</button> {/* TODO: add cancel */}
+      <Button onClick={() => setCameraActive(!cameraActive)}>{btnText}</Button>
       <div id="videoContainer" style={{ display: cameraActive ? 'block' : 'none' }}>
-        <video ref={videoRef} id="qr-video" width={'250px'} height={'250px'} />
+        <br />
+        <video ref={videoRef} id="qr-video" width={'100%'} height={'100%'} />
       </div>
       <br />
-      {qrResult} {/* TODO: remove */}
-      <br />
-      {hasScanned && <ResultContainer result={qrResult} />}
+      {hasScanned && <ResultContainer result={qrResult} resetState={resetState} />}{' '}
+      {/* TODO: pass in setHasScanned */}
     </>
   );
 }
