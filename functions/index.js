@@ -130,6 +130,7 @@ async function getNewAttendees(collectionName) {
 
     // iterate through pages from the back. Note that this prevents the use of continuation tokens
     for (currentPage = totalPages; currentPage >= 1; currentPage--) {
+      logger.info('page: ' + currentPage);
       const data = await getData(currentPage);
       const filteredAttendees = data.attendees.filter((attendee) => {
         return new Date(attendee.created).getTime() > lastUpdateTime && attendee.cancelled == false;
@@ -182,7 +183,8 @@ async function uploadBatch(collectionName, dataArray, lastUpdateTime, batchSize 
 
       batch.set(lastUpdateRef, {
         timestamp: lastUpdateTime,
-        'timestamp datetime': new Date(lastUpdateTime)
+        'timestamp datetime': new Date(lastUpdateTime),
+        lastpull: new Date().toString()
       });
       batch.commit();
       logger.info('batched');
@@ -219,7 +221,7 @@ exports.uploadEB = functions
 exports.uploadEBpubSub = functions
   .region('asia-southeast1')
   .runWith({ memory: '1GB', timeoutSeconds: 180 })
-  .pubsub.schedule('every minute')
+  .pubsub.schedule('every 5 minutes')
   .onRun(async () => {
     const data = await getNewAttendees(uploadCollection);
     if (data) {

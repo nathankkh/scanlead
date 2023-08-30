@@ -4,7 +4,6 @@ import { useContext } from 'react';
 import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from '../../firebase-setup/firebase-functions';
 import AuthContext from '../../utils/AuthContext';
-/* import { lookupValue, submitLead } from '../../firebase-setup/firebase-functions'; //TODO: DELETE ME */
 
 import Grid from '@mui/joy/Grid';
 import Typography from '@mui/joy/Typography';
