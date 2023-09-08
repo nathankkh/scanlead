@@ -127,11 +127,19 @@ async function getNewAttendees(collectionName) {
     // TODO: make use of initial call.
     const initialData = await getData(currentPage);
     const totalPages = initialData.pagination.page_count;
-
+    let couldHaveCancellations = true;
     // iterate through pages from the back. Note that this prevents the use of continuation tokens
     for (currentPage = totalPages; currentPage >= 1; currentPage--) {
       logger.info('page: ' + currentPage);
       const data = await getData(currentPage);
+      // CHECK FOR CANCELLATIONS =============================
+      if (couldHaveCancellations) {
+        let cancelledAttendees = data.attendees.filter((attendee) => {
+          return attendee.cancelled == true;
+        });
+      }
+      // =====================================================
+
       const filteredAttendees = data.attendees.filter((attendee) => {
         return new Date(attendee.created).getTime() > lastUpdateTime && attendee.cancelled == false;
       });
@@ -143,16 +151,36 @@ async function getNewAttendees(collectionName) {
         result.push(template);
       }
 
-      // prevent extra API calls if the most recent call had more new attendees
-      if (filteredAttendees.length == 0) {
+      // prevent additional checks for cancelled attendees IF the entire page has no cancellations
+      // this is valid because the API pushes cancelled attendees to the back
+      if (cancelledAttendees.length == 0) {
+        couldHaveCancellations = false;
+      }
+
+      // prevent extra API calls if the most recent call had more new attendees AND there are no cancelled attendees
+      if (filteredAttendees.length == 0 && cancelledAttendees.length == 0) {
         break;
       }
-      // TODO: optimise further, check whether filtered attendee length is less than current page size
     }
     return [result, lastCreated];
   } catch (error) {
     logger.error(error);
     logger.error('Error in getNewAttendees()');
+  }
+}
+
+async function updatePullTime(collectionName) {
+  const lastUpdateRef = db.collection(collectionName).doc('lastUpdated');
+  try {
+    await lastUpdateRef.set(
+      {
+        lastpull: new Date().toString()
+      },
+      { merge: true }
+    );
+  } catch (error) {
+    logger.error(error);
+    logger.error('Error in updatePullTime()');
   }
 }
 
@@ -228,6 +256,7 @@ exports.uploadEBpubSub = functions
       uploadBatch(uploadCollection, data[0], data[1]);
       logger.info('done');
     } else {
+      updatePullTime(uploadCollection);
       logger.info('No new attendees'); // TODO: ERROR HANDLING
     }
   });
