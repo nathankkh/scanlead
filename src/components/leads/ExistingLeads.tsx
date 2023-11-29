@@ -93,8 +93,9 @@ function ExistingLeads({ leadsPerPage, setLeadsPerPage }) {
 
   function handleEdit(e) {
     // remove one level of parentNode if not using MUI
-    const index = e.target.parentNode.parentNode.parentNode.dataset.index;
-    setSelectedLead(leads[index]);
+    const index = e.target.parentNode.parentNode.parentNode.dataset.index; // returns the index of THE CURRENT PAGE. Requires setSelectedLead to index based on `currentLeads`.
+    // index = leadsPerPage * (currentPage - 1) + Number(index); // returns the index of the selected lead from the entire array. Use if following line indexes on `leads`
+    setSelectedLead(currentLeads[index]);
     setIsEditModalOpen(true);
   }
 
@@ -105,9 +106,10 @@ function ExistingLeads({ leadsPerPage, setLeadsPerPage }) {
 
   function handleDeleteClick(e) {
     // remove one level of parentNode if not using MUI
-    const index = e.target.parentNode.parentNode.parentNode.dataset.index;
-    console.log(leads[index]);
-    setSelectedLead(leads[index]);
+    const index = e.target.parentNode.parentNode.parentNode.dataset.index; // sRequires setSelectedLead to index based on `currentLeads`.
+    // index = leadsPerPage * (currentPage - 1) + Number(index); // returns the index of the selected lead from the entire array.
+    console.log(currentLeads[index]);
+    setSelectedLead(currentLeads[index]);
     setIsDeleteModalOpen(true);
   }
 
@@ -179,6 +181,7 @@ function ExistingLeads({ leadsPerPage, setLeadsPerPage }) {
                 setCurrentPage(1);
               }}
             >
+              <Option value="3">3</Option>
               <Option value="10">10</Option>
               <Option value="20">20</Option>
               <Option value="50">50</Option>
@@ -234,7 +237,7 @@ function ExistingLeads({ leadsPerPage, setLeadsPerPage }) {
           </div>
         )}
 
-        {/* This displays the page numbers at the bottom of the page */}
+        {/* Pagination; this displays the page numbers at the bottom of the page */}
         <Stack
           id="page-select"
           direction="row"

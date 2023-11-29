@@ -134,9 +134,14 @@ async function getNewAttendees(collectionName) {
       const data = await getData(currentPage);
       // CHECK FOR CANCELLATIONS =============================
       if (couldHaveCancellations) {
-        let cancelledAttendees = data.attendees.filter((attendee) => {
+        const cancelledAttendees = data.attendees.filter((attendee) => {
           return attendee.cancelled == true;
         });
+        // prevent additional checks for cancelled attendees IF the entire page has no cancellations
+        // this is valid because the API pushes cancelled attendees to the back
+        if (cancelledAttendees.length == 0) {
+          couldHaveCancellations = false;
+        }
       }
       // =====================================================
 
@@ -151,14 +156,8 @@ async function getNewAttendees(collectionName) {
         result.push(template);
       }
 
-      // prevent additional checks for cancelled attendees IF the entire page has no cancellations
-      // this is valid because the API pushes cancelled attendees to the back
-      if (cancelledAttendees.length == 0) {
-        couldHaveCancellations = false;
-      }
-
       // prevent extra API calls if the most recent call had more new attendees AND there are no cancelled attendees
-      if (filteredAttendees.length == 0 && cancelledAttendees.length == 0) {
+      if (filteredAttendees.length == 0 && couldHaveCancellations == false) {
         break;
       }
     }
@@ -169,6 +168,10 @@ async function getNewAttendees(collectionName) {
   }
 }
 
+/**
+ * Updates lastpulled time in the event that there are no new attendees
+ * @param {String} collectionName
+ */
 async function updatePullTime(collectionName) {
   const lastUpdateRef = db.collection(collectionName).doc('lastUpdated');
   try {
@@ -194,6 +197,7 @@ async function updatePullTime(collectionName) {
 async function uploadBatch(collectionName, dataArray, lastUpdateTime, batchSize = 500) {
   batchSize = batchSize - 1; // -1 to account for lastUpdated doc
   const lastUpdateRef = db.collection(collectionName).doc('lastUpdated');
+  logger.info('number of records to upload: ' + dataArray.length);
   const numBatches = Math.ceil(dataArray.length / batchSize);
 
   for (let i = 0; i < numBatches; i++) {
