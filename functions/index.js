@@ -127,10 +127,24 @@ async function getNewAttendees(collectionName) {
     // TODO: make use of initial call.
     const initialData = await getData(currentPage);
     const totalPages = initialData.pagination.page_count;
-
+    let couldHaveCancellations = true;
     // iterate through pages from the back. Note that this prevents the use of continuation tokens
     for (currentPage = totalPages; currentPage >= 1; currentPage--) {
+      logger.info('page: ' + currentPage);
       const data = await getData(currentPage);
+      // CHECK FOR CANCELLATIONS =============================
+      if (couldHaveCancellations) {
+        const cancelledAttendees = data.attendees.filter((attendee) => {
+          return attendee.cancelled == true;
+        });
+        // prevent additional checks for cancelled attendees IF the entire page has no cancellations
+        // this is valid because the API pushes cancelled attendees to the back
+        if (cancelledAttendees.length == 0) {
+          couldHaveCancellations = false;
+        }
+      }
+      // =====================================================
+
       const filteredAttendees = data.attendees.filter((attendee) => {
         return new Date(attendee.created).getTime() > lastUpdateTime && attendee.cancelled == false;
       });
@@ -142,16 +156,34 @@ async function getNewAttendees(collectionName) {
         result.push(template);
       }
 
-      // prevent extra API calls if the most recent call had more new attendees
-      if (filteredAttendees.length == 0) {
+      // prevent extra API calls if the most recent call had more new attendees AND there are no cancelled attendees
+      if (filteredAttendees.length == 0 && couldHaveCancellations == false) {
         break;
       }
-      // TODO: optimise further, check whether filtered attendee length is less than current page size
     }
     return [result, lastCreated];
   } catch (error) {
     logger.error(error);
     logger.error('Error in getNewAttendees()');
+  }
+}
+
+/**
+ * Updates lastpulled time in the event that there are no new attendees
+ * @param {String} collectionName
+ */
+async function updatePullTime(collectionName) {
+  const lastUpdateRef = db.collection(collectionName).doc('lastUpdated');
+  try {
+    await lastUpdateRef.set(
+      {
+        lastpull: new Date().toString()
+      },
+      { merge: true }
+    );
+  } catch (error) {
+    logger.error(error);
+    logger.error('Error in updatePullTime()');
   }
 }
 
@@ -165,6 +197,7 @@ async function getNewAttendees(collectionName) {
 async function uploadBatch(collectionName, dataArray, lastUpdateTime, batchSize = 500) {
   batchSize = batchSize - 1; // -1 to account for lastUpdated doc
   const lastUpdateRef = db.collection(collectionName).doc('lastUpdated');
+  logger.info('number of records to upload: ' + dataArray.length);
   const numBatches = Math.ceil(dataArray.length / batchSize);
 
   for (let i = 0; i < numBatches; i++) {
@@ -182,7 +215,8 @@ async function uploadBatch(collectionName, dataArray, lastUpdateTime, batchSize 
 
       batch.set(lastUpdateRef, {
         timestamp: lastUpdateTime,
-        'timestamp datetime': new Date(lastUpdateTime)
+        'timestamp datetime': new Date(lastUpdateTime),
+        lastpull: new Date().toString()
       });
       batch.commit();
       logger.info('batched');
@@ -219,13 +253,14 @@ exports.uploadEB = functions
 exports.uploadEBpubSub = functions
   .region('asia-southeast1')
   .runWith({ memory: '1GB', timeoutSeconds: 180 })
-  .pubsub.schedule('every minute')
+  .pubsub.schedule('every 5 minutes')
   .onRun(async () => {
     const data = await getNewAttendees(uploadCollection);
     if (data) {
       uploadBatch(uploadCollection, data[0], data[1]);
       logger.info('done');
     } else {
+      updatePullTime(uploadCollection);
       logger.info('No new attendees'); // TODO: ERROR HANDLING
     }
   });
