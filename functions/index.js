@@ -33,7 +33,7 @@ const uploadCollection = 'eventbrite';
  */
 async function getEBKey() {
   const client = new SecretManagerServiceClient();
-  const name = 'projects/292470144917/secrets/EB_key/versions/2';
+  const name = 'projects/292470144917/secrets/EB_key/versions/HH';
 
   const [version] = await client.accessSecretVersion({ name });
   const secretValue = version.payload.data.toString();
@@ -97,14 +97,15 @@ function populateAttendeeTemplate(attendee) {
   template.phone = attendee.profile.cell_phone;
   template.jobTitle = attendee.profile.job_title;
   /*
-    0: Where did you hear of this event
-    1: Work experience (years)
-    2: Field of interest
-    3: interested sessions
-    4: T&C
+    0:  Work experience (years)
+    1: Field of interest
+    2: interested sessions
+    3: interested institutions
+    4: Capitaland tenant
+    5: T&C
   */
-  template.experience = attendee.answers[1].answer; // can match question_id too
-  template.fieldOfInterest = attendee.answers[2].answer;
+  template.experience = attendee.answers[0].answer; // can match question_id too
+  template.fieldOfInterest = attendee.answers[1].answer;
   return template;
 }
 
@@ -264,3 +265,13 @@ exports.uploadEBpubSub = functions
       logger.info('No new attendees'); // TODO: ERROR HANDLING
     }
   });
+
+module.exports = {
+  getEBKey,
+  getEventID,
+  getData,
+  populateAttendeeTemplate,
+  getNewAttendees,
+  updatePullTime,
+  uploadBatch
+};
