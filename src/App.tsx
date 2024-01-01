@@ -3,6 +3,7 @@ import Logo from './components/Logo';
 import UserContainer from './components/user/UserContainer';
 import TabSelector from './components/leads/TabSelector';
 import AuthContext from './utils/AuthContext';
+import EventSelector from './components/EventSelector';
 
 import { useState } from 'react';
 
@@ -17,6 +18,7 @@ function App() {
       <AuthContext.Provider value={{ isLoggedIn }}>
         <>
           <Logo />
+          <EventSelector />
           <UserContainer setIsLoggedIn={setIsLoggedIn} showUser={showUser} />
 
           {isLoggedIn && <hr />}
