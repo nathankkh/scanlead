@@ -152,10 +152,10 @@ export async function lookupValue(lookupValue, collectionName, referenceField) {
 
 /**
  * Gets all documents from a given collection in Firestore.
- * @param {*} collectionName The name of the collection to retrieve. Pass in current user's email.
+ * @param {*} collectionName The name of the collection to retrieve.
  * @returns A promise of an array of documents from the collection.
  */
-export async function getAllLeads(collectionName) {
+export async function getAllDocs(collectionName) {
   //FIXME: Unused, can delete
   const collectionRef = collection(db, collectionName);
   const querySnapshot = await getDocs(collectionRef);
