@@ -3,7 +3,7 @@ import {
   getCurrentUserEmail,
   deleteLead,
   subscribeToCollection
-} from '../../firebase-setup/firebase-functions';
+} from '../../utils/firebase/firebase-functions';
 import LeadForm from './results/LeadForm';
 
 import Button from '@mui/joy/Button';

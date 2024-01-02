@@ -1,13 +1,13 @@
-import { ListItem, Stack } from '@mui/joy';
+import { ListItemButton, Stack } from '@mui/joy';
 
 export default function EventSelector() {
   // select event, then click confirm
   return (
     <Stack>
       hello
-      <ListItem>Event 1</ListItem>
-      <ListItem>Event 2</ListItem>
-      <ListItem>Event 3</ListItem>
+      <ListItemButton>Event 1</ListItemButton>
+      <ListItemButton>Event 2</ListItemButton>
+      <ListItemButton>Event 3</ListItemButton>
     </Stack>
   );
 }

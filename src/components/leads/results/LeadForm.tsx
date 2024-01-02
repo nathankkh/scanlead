@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { getCurrentUser, submitLead } from '../../../firebase-setup/firebase-functions';
+import { getCurrentUser, submitLead } from '../../../utils/firebase/firebase-functions';
 
 import Button from '@mui/joy/Button';
 import Box from '@mui/joy/Box';

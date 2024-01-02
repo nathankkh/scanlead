@@ -1,4 +1,4 @@
-import { loginEmailPassword } from '../../firebase-setup/firebase-functions';
+import { loginEmailPassword } from '../../utils/firebase/firebase-functions';
 import { useState } from 'react';
 
 import FormControl from '@mui/joy/FormControl';

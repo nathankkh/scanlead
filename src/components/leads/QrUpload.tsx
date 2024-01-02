@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { uploadFile } from '../../firebase-setup/firebase-functions';
+import { uploadFile } from '../../utils/firebase/firebase-functions.js';
 import QrScanner from 'qr-scanner';
 import config from '../../../config.ts';
 

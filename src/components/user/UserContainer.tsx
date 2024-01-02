@@ -2,7 +2,7 @@ import UserLoginForm from './UserLoginForm';
 import UserLogout from './UserLogout';
 import { useContext } from 'react';
 import { onAuthStateChanged } from 'firebase/auth';
-import { auth } from '../../firebase-setup/firebase-functions';
+import { auth } from '../../utils/firebase/firebase-functions';
 import AuthContext from '../../utils/AuthContext';
 
 import Grid from '@mui/joy/Grid';

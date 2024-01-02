@@ -1,6 +1,6 @@
 import LeadForm from './LeadForm';
 import config from '../../../../config.ts';
-import { lookupValue, getCurrentUserEmail } from '../../../firebase-setup/firebase-functions.js';
+import { lookupValue, getCurrentUserEmail } from '../../../utils/firebase/firebase-functions.js';
 import { useState, useEffect } from 'react';
 
 function ResultContainer({ result, resetState }) {
