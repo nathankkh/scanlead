@@ -1,16 +1,28 @@
-import { ListItemButton, Stack } from '@mui/joy';
-// import { getAllDocs } from '../utils/firebase/firebase-functions';
-// import { useEffect } from 'react';
+import { Button, Stack } from '@mui/joy';
+import { getAllDocs } from '../utils/firebase/firebase-functions';
+import { useEffect, useState } from 'react';
+
+interface Event {
+  Name: string;
+  Date: number;
+}
 
 export default function EventSelector() {
-  // const events = getAllDocs('events');
-  // select event, then click confirm
+  const [events, setEvents] = useState<Event[]>([]);
+
+  // Populates events array with all existing events
+  useEffect(() => {
+    getAllDocs('events').then((docs) => {
+      setEvents(docs);
+    });
+  }, []);
+
   return (
     <Stack>
-      hello
-      <ListItemButton>Event 1</ListItemButton>
-      <ListItemButton>Event 2</ListItemButton>
-      <ListItemButton>Event 3</ListItemButton>
+      {events.map((event) => (
+        <Button variant="plain">{event.Name}</Button>
+      ))}
+      <Button onClick={() => console.log(events)}>Confirm</Button>
     </Stack>
   );
 }
