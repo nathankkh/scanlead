@@ -1,11 +1,12 @@
 import { createContext, Dispatch, SetStateAction } from 'react';
+import Event from '../interfaces/Event';
 
 interface EventContextProps {
-  event: string | null;
-  setEvent: Dispatch<SetStateAction<string | null>>;
+  event: Event | null;
+  setEvent: Dispatch<SetStateAction<Event>>;
 }
 
-const defaultSetEvent: Dispatch<SetStateAction<string | null>> = () => {
+const defaultSetEvent: Dispatch<SetStateAction<Event>> = () => {
   0;
 };
 

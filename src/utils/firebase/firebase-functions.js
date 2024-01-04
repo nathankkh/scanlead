@@ -161,7 +161,9 @@ export async function getAllDocs(collectionName) {
   const querySnapshot = await getDocs(collectionRef);
   const results = [];
   querySnapshot.forEach((doc) => {
-    results.push(doc.data());
+    let currentDoc = doc.data();
+    currentDoc.id = doc.id; // appends doc's ID to the object for future reference
+    results.push(currentDoc);
   });
   return results;
 }

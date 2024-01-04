@@ -22,6 +22,7 @@ import ModalClose from '@mui/joy/ModalClose';
 import ModalDialog from '@mui/joy/ModalDialog';
 
 interface Lead {
+  // TODO: Move this to a separate file
   id: string;
   name: string;
   email: string;
