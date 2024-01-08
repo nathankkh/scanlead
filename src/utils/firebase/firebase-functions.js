@@ -79,6 +79,7 @@ export async function logout() {
  * Google Cloud location given by firebase-config.
  * @param {*} file
  * @param {String} collectionName Name of the collection in Firestore to add the file's URL reference to.
+ * @deprecated
  */
 export async function uploadFile(file, collectionName) {
   // Store a copy of the file in Cloud storage and a url reference to it in Firestore
@@ -121,7 +122,7 @@ export async function uploadFile(file, collectionName) {
  * @param {String} collectionName The name of the collection in Firestore to upload the document to.
  */
 export async function submitLead(lead, docName, collectionName = auth.currentUser.email) {
-  const collectionRef = collection(db, collectionName);
+  const collectionRef = collection(db, collectionName); // TODO: UPDATE to match new folder structure
   try {
     await setDoc(doc(collectionRef, docName), lead, { merge: true });
     console.log('Document written at: ', Date.now());
@@ -140,7 +141,7 @@ export async function submitLead(lead, docName, collectionName = auth.currentUse
  */
 export async function lookupValue(lookupValue, collectionName, referenceField) {
   // used to get attendee's data from a successful QR scan
-  const collectionRef = collection(db, collectionName);
+  const collectionRef = collection(db, collectionName); // TODO: UPDATE to match new folder structure
   const q = query(collectionRef, where(referenceField, '==', lookupValue));
   const querySnapshot = await getDocs(q);
   const results = [];
@@ -176,12 +177,14 @@ export async function getAllDocs(collectionName) {
  * @returns an unsubscribe function
  */
 export function subscribeToCollection(collectionName, snapshotCallback, errorCallback) {
+  // TODO: UPDATE to match new folder structure
   const collectionRef = collection(db, collectionName);
   const q = query(collectionRef, orderBy('timestamp', 'desc'));
   return onSnapshot(q, snapshotCallback, errorCallback);
 }
 
 export async function deleteLead(collectionName, docName) {
+  // TODO: UPDATE to match new folder structure
   const collectionRef = collection(db, collectionName);
   try {
     await deleteDoc(doc(collectionRef, docName));
@@ -203,7 +206,7 @@ export async function uploadBatch(collectionName, dataArray, lastUpdateTime, bat
   batchSize = batchSize - 1; // -1 to account for lastUpdated doc
   console.log('awaiting batch');
   console.log(dataArray);
-  const lastUpdateRef = doc(db, collectionName, 'lastUpdated');
+  const lastUpdateRef = doc(db, collectionName, 'lastUpdated'); // TODO: UPDATE to match new folder structure
   const collectionRef = collection(db, collectionName);
   const numBatches = Math.ceil(dataArray.length / batchSize);
 

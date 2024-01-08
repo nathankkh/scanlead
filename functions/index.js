@@ -174,6 +174,7 @@ async function getNewAttendees(collectionName) {
  * @param {String} collectionName
  */
 async function updatePullTime(collectionName) {
+  // TODO: UPDATE to match new folder structure
   const lastUpdateRef = db.collection(collectionName).doc('lastUpdated');
   try {
     await lastUpdateRef.set(
@@ -196,6 +197,7 @@ async function updatePullTime(collectionName) {
  * @param {number} batchSize The number of operations per batch. Default is 500.
  */
 async function uploadBatch(collectionName, dataArray, lastUpdateTime, batchSize = 500) {
+  // TODO: UPDATE to match new folder structure
   batchSize = batchSize - 1; // -1 to account for lastUpdated doc
   const lastUpdateRef = db.collection(collectionName).doc('lastUpdated');
   logger.info('number of records to upload: ' + dataArray.length);
