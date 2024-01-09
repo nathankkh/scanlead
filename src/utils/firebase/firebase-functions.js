@@ -133,8 +133,8 @@ export async function submitLeadbk(lead, docName, collectionName = auth.currentU
   }
 }
 
-export async function submitLead(lead, docName, subcollectionName) { 
-  const collectionRef = collection(db, "users", auth.currentUser.email, eventID);
+export async function submitLead(lead, docName, collectionName = auth.currentUser.email) { 
+  const collectionRef = collection(db, "users", collectionName, eventID);
   try {
     await setDoc(doc(collectionRef, docName), lead, { merge: true });
     console.log('Document written at: ', Date.now());
@@ -151,9 +151,21 @@ export async function submitLead(lead, docName, subcollectionName) {
  * @param {String} referenceField  The field in the collection to find lookupString. (e.g. uid, email)
  * @returns A promise of an array of documents that match the lookupString. (Should only be one)
  */
-export async function lookupValue(lookupValue, collectionName, referenceField) {
+export async function lookupValuebk(lookupValue, collectionName, referenceField) {
   // used to get attendee's data from a successful QR scan
   const collectionRef = collection(db, collectionName); // TODO: UPDATE to match new folder structure
+  const q = query(collectionRef, where(referenceField, '==', lookupValue));
+  const querySnapshot = await getDocs(q);
+  const results = [];
+  querySnapshot.forEach((doc) => {
+    results.push(doc.data());
+  });
+  return results;
+}
+
+export async function lookupValuebk(lookupValue, collectionName, referenceField) {
+  // used to get attendee's data from a successful QR scan
+  const collectionRef = collection(db, "events", eventID, "eventbrite"); 
   const q = query(collectionRef, where(referenceField, '==', lookupValue));
   const querySnapshot = await getDocs(q);
   const results = [];
