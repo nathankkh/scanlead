@@ -15,14 +15,15 @@ import {
   doc,
   onSnapshot,
   orderBy,
-  writeBatch
+  writeBatch,
+  arrayUnion
 } from 'firebase/firestore';
 import { getStorage, ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 
 export const auth = getAuth(firebaseApp);
 export const db = getFirestore(firebaseApp);
 export const storage = getStorage(firebaseApp);
-const eventID = "000"
+const eventID = '741341922647';
 
 export function getCurrentUserEmail() {
   if (auth.currentUser.email) {
@@ -121,6 +122,7 @@ export async function uploadFile(file, collectionName) {
  * @param {Object} lead An Object with Key-Value pairs.
  * @param {String} docName The name of the document. Recommended to concat userEmail_qrResult
  * @param {String} collectionName The name of the collection in Firestore to upload the document to.
+ * @deprecated due to new folder structure
  */
 export async function submitLeadbk(lead, docName, collectionName = auth.currentUser.email) {
   const collectionRef = collection(db, collectionName); // TODO: UPDATE to match new folder structure
@@ -133,13 +135,34 @@ export async function submitLeadbk(lead, docName, collectionName = auth.currentU
   }
 }
 
-export async function submitLead(lead, docName, collectionName = auth.currentUser.email) { 
-  const collectionRef = collection(db, "users", collectionName, eventID);
+export async function submitLead(lead, docName, username = auth.currentUser.email) {
+  // check for existence of doc. if exists, carry on.
+  // if not, create doc with default values
+  updateEventsParticipated();
+  const collectionRef = collection(db, 'users', username, eventID);
   try {
     await setDoc(doc(collectionRef, docName), lead, { merge: true });
-    console.log('Document written at: ', Date.now());
+    console.log('SubmitLead: Document written at: ', Date.now());
   } catch (error) {
-    alert('error setting doc: ' + error);
+    alert('SubmitLead: error setting doc: ' + error);
+    console.log(error);
+  }
+}
+
+/**
+ * Updates the array of events particpated in for a given user.
+ * @param {String} username
+ */
+async function updateEventsParticipated(username = auth.currentUser.email) {
+  const collectionRef = collection(db, 'users');
+  try {
+    await setDoc(doc(collectionRef, username), {
+      eventsParticipated: arrayUnion(eventID)
+    }),
+      { merge: true };
+    console.log('updateEventsParticipated: updated array at ', Date.now());
+  } catch (error) {
+    alert('updateEventsParticipated error: ' + error);
     console.log(error);
   }
 }
@@ -150,6 +173,7 @@ export async function submitLead(lead, docName, collectionName = auth.currentUse
  * @param {String} collectionName The name of the collection in Firestore to search in.
  * @param {String} referenceField  The field in the collection to find lookupString. (e.g. uid, email)
  * @returns A promise of an array of documents that match the lookupString. (Should only be one)
+ * @deprecated due to new folder structure
  */
 export async function lookupValuebk(lookupValue, collectionName, referenceField) {
   // used to get attendee's data from a successful QR scan
@@ -163,15 +187,24 @@ export async function lookupValuebk(lookupValue, collectionName, referenceField)
   return results;
 }
 
-export async function lookupValuebk(lookupValue, collectionName, referenceField) {
+/**
+ * Retrieves a document from a given collection in Firestore, based on the lookup value provided.
+ * Called when participant QR code is scanned.
+ * @param {*} lookupValue The value to search for. (e.g. QR code's result)
+ * @param {String} path A string representation of the path to the specific collection in Firestore to search in. (e.g. 'users/username/eventID')
+ * @param {String} referenceField The field in the collection to find lookupString. (e.g. uid, email)
+ * @returns A promise of an array of documents that match the lookupString. (Should only be one)
+ */
+export async function lookupValue(lookupValue, path, referenceField) {
   // used to get attendee's data from a successful QR scan
-  const collectionRef = collection(db, "events", eventID, "eventbrite"); 
+  const collectionRef = collection(db, path);
   const q = query(collectionRef, where(referenceField, '==', lookupValue));
   const querySnapshot = await getDocs(q);
   const results = [];
   querySnapshot.forEach((doc) => {
     results.push(doc.data());
   });
+  console.log('Function `lookupValue` result: ', results);
   return results;
 }
 
@@ -195,26 +228,24 @@ export async function getAllDocs(collectionName) {
 
 /**
  * Creates a listener for a given collection in Firestore.
- * @param {*} collectionName
+ * @param {String} path A string representation of the path to the specific collection in Firestore to listen to. (e.g. 'users/username/eventID')
  * @param {*} snapshotCallback A callback function to be called when a snapshot is received. Use in conjunction with a way to display a data snapshot.
  * @param {*} errorCallback A callback function to be called when an error occurs.
  * @returns an unsubscribe function
  */
-export function subscribeToCollection(collectionName, snapshotCallback, errorCallback) {
-  // TODO: UPDATE to match new folder structure
-  const collectionRef = collection(db, collectionName);
+export function subscribeToCollection(path, snapshotCallback, errorCallback) {
+  const collectionRef = collection(db, path);
   const q = query(collectionRef, orderBy('timestamp', 'desc'));
   return onSnapshot(q, snapshotCallback, errorCallback);
 }
 
-export async function deleteLead(collectionName, docName) {
-  // TODO: UPDATE to match new folder structure
-  const collectionRef = collection(db, collectionName);
+export async function deleteLead(path, docName) {
+  const collectionRef = collection(db, path);
   try {
     await deleteDoc(doc(collectionRef, docName));
   } catch (err) {
     console.log(err);
-    alert('error deleting lead: ' + err); //FIXME: error handling
+    alert('Error deleting lead! Please inform tech desk.');
   }
 }
 
@@ -224,7 +255,7 @@ export async function deleteLead(collectionName, docName) {
  * @param {Array} dataArray An array of documents to upload. Each document should be an object with data stored as key-value pairs.
  * @param {number} lastUpdateTime Milliseconds since epoch. Used to update the lastUpdated doc.
  * @param {number} batchSize The number of operations per batch. Default is 500.
- * @deprecated
+ * @deprecated as this is handled by cloud functions now
  */
 export async function uploadBatch(collectionName, dataArray, lastUpdateTime, batchSize = 500) {
   batchSize = batchSize - 1; // -1 to account for lastUpdated doc

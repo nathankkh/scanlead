@@ -5,6 +5,7 @@ import {
   subscribeToCollection
 } from '../../utils/firebase/firebase-functions';
 import LeadForm from './results/LeadForm';
+import Lead from '../../interfaces/Lead';
 
 import Button from '@mui/joy/Button';
 import Typography from '@mui/joy/Typography';
@@ -21,25 +22,10 @@ import Modal from '@mui/joy/Modal';
 import ModalClose from '@mui/joy/ModalClose';
 import ModalDialog from '@mui/joy/ModalDialog';
 
-interface Lead {
-  // TODO: Move this to a separate file
-  id: string;
-  name: string;
-  email: string;
-  phone: string | number;
-  jobTitle: string;
-  experience: string;
-  fieldOfInterest: string;
-  temperature: string;
-  comments: string;
-  timestamp: number;
-}
-
 function ExistingLeads({ leadsPerPage, setLeadsPerPage }) {
   const [leads, setLeads] = useState<Lead[]>([]); // Array containing each lead as an {} object
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  // const [leadsPerPage, setLeadsPerPage] = useState(10);
   const [selectedLead, setSelectedLead] = useState<Lead>(); // {} object, to be used when editing
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState(''); //TODO: consider useRef. Will likely require a button to search; won't have realtime update of displayed leads
@@ -53,10 +39,12 @@ function ExistingLeads({ leadsPerPage, setLeadsPerPage }) {
   const indexOfFirstLead = indexOfLastLead - leadsPerPage;
   const currentLeads = filteredLeads.slice(indexOfFirstLead, indexOfLastLead);
 
+  const userEmail = getCurrentUserEmail();
+  const userCollectionPath = `users/${userEmail}/741341922647`; // TODO: replace eventID with context value
   useEffect(() => {
     // Creates a listener for a given firebase collection. Returns an unsubscribe function, which runs on component unmount.
     const unsubscribe = subscribeToCollection(
-      getCurrentUserEmail(),
+      userCollectionPath,
       (querySnapshot) => {
         if (!querySnapshot.empty) {
           const existingLeads = querySnapshot.docs.map((snapshot) => snapshot.data());
@@ -80,7 +68,7 @@ function ExistingLeads({ leadsPerPage, setLeadsPerPage }) {
       window.removeEventListener('beforeunload', handleTabClose);
       unsubscribe();
     };
-  }, []);
+  }, [userCollectionPath]);
 
   function properCase(str: string) {
     return str
@@ -117,11 +105,13 @@ function ExistingLeads({ leadsPerPage, setLeadsPerPage }) {
   function confirmDelete() {
     try {
       const id = selectedLead?.id;
-      console.log(id);
-      const collectionName = getCurrentUserEmail();
-      const docName = collectionName.split('@')[0] + '_' + id; //FIXME: Possible bug depending on how a Lead is added to firestore
-      console.log(docName);
-      deleteLead(collectionName, docName).then(() => {
+      console.log('ExistingLeads: LeadID to be deleted: ', id);
+
+      // takes the org name from the email, and appends the id of the lead to be deleted
+      // eg if email is "test@org.com", and id is "123", then docName is "test_123"
+      const docName = userEmail.split('@')[0] + '_' + id; //FIXME: Possible bug depending on how a Lead is added to firestore
+      console.log('ExistingLeads: DocID to be deleted: ', docName);
+      deleteLead(userCollectionPath, docName).then(() => {
         alert('Deleted!');
       });
     } catch (error) {

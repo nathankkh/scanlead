@@ -74,7 +74,8 @@ export default function UserContainer({ setIsLoggedIn, showUser }) {
     'HH2',
     'HH3',
     'HH4',
-    'SUSSSHBS'
+    'SUSSSHBS',
+    'SMUSOSS'
   ];
 
   function displayUser(email) {
@@ -110,9 +111,6 @@ export default function UserContainer({ setIsLoggedIn, showUser }) {
           <Grid>
             <UserLogout />
           </Grid>
-          {/* <input ref={valueRef}></input> //TODO: DELETE ME
-          <button onClick={() => testUploadLead(valueRef.current?.value)}> test</button> //TODO:
-          DELETE ME */}
         </Grid>
       )}
 

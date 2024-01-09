@@ -120,7 +120,7 @@ function populateAttendeeTemplate(attendee) {
  */
 async function getNewAttendees(collectionName) {
   try {
-    const lastUpdateDoc = await db.collection(`${collectionName}`).doc('lastUpdated').get();
+    const lastUpdateDoc = await db.collection(`${collectionName}`).doc('lastUpdated').get(); // TODO: UPDATE to match new folder structure
     const lastUpdateTime = lastUpdateDoc.exists ? lastUpdateDoc.data().timestamp : 0;
     const result = [];
     let currentPage = 1;

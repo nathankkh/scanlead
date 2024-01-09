@@ -8,7 +8,9 @@ import { collection, getDocs } from 'firebase/firestore';
 
 // TODO: Remove this function
 async function getAllDocsFromSubcollection() {
-  const collRef = collection(db, 'users', 'HH5@headhunt.com.sg', 'Event2');
+  const userID = 'abc123';
+  const eventID = '0000';
+  const collRef = collection(db, 'users', userID, eventID);
   const qSnap = await getDocs(collRef);
   qSnap.forEach((doc) => {
     console.log(doc.data());
@@ -33,7 +35,6 @@ export default function EventSelector() {
           {event.Name}
         </Button>
       ))}
-
       <Button onClick={() => console.log(events)}>logEvents</Button>
       <Button variant="solid" color="danger" onClick={getAllDocsFromSubcollection}>
         GetSubcollections

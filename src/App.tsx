@@ -4,7 +4,7 @@ import EventContext from './utils/EventContext';
 import Logo from './components/Logo';
 import UserContainer from './components/user/UserContainer';
 import TabSelector from './components/leads/TabSelector';
-import EventSelector from './components/EventSelector';
+// import EventSelector from './components/EventSelector';
 import Event from './interfaces/Event';
 import { useState } from 'react';
 
@@ -29,7 +29,7 @@ function App() {
         <EventContext.Provider value={{ event, setEvent }}>
           <>
             <Logo />
-            <EventSelector /> {/* TODO: Make this event dependent */}
+            {/* <EventSelector />  */}
             <UserContainer setIsLoggedIn={setIsLoggedIn} showUser={showUser} />
             {isLoggedIn && <hr />}
             {isLoggedIn && <TabSelector setShowUser={setShowUser} />}

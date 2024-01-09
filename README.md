@@ -33,7 +33,14 @@ Create a back button on the home page to select event
 
 # Config
 
+## Pre-event
+
 - Before each event, check the questions asked in the sign up page. Update `populateAttendeeTemplate` to match the questions asked.
 - Compare the receipt printed out with the ID field. It should be given by `order_id` + `id` + 001
+
+## Adding new users
+
+- Add users to Firebase Authentication
+- Update the `user` array in [UserContainer](UserContainer.tsx)
 
 #
