@@ -22,6 +22,7 @@ import { getStorage, ref, uploadBytesResumable, getDownloadURL } from 'firebase/
 export const auth = getAuth(firebaseApp);
 export const db = getFirestore(firebaseApp);
 export const storage = getStorage(firebaseApp);
+const eventID = "000"
 
 export function getCurrentUserEmail() {
   if (auth.currentUser.email) {
@@ -121,8 +122,19 @@ export async function uploadFile(file, collectionName) {
  * @param {String} docName The name of the document. Recommended to concat userEmail_qrResult
  * @param {String} collectionName The name of the collection in Firestore to upload the document to.
  */
-export async function submitLead(lead, docName, collectionName = auth.currentUser.email) {
+export async function submitLeadbk(lead, docName, collectionName = auth.currentUser.email) {
   const collectionRef = collection(db, collectionName); // TODO: UPDATE to match new folder structure
+  try {
+    await setDoc(doc(collectionRef, docName), lead, { merge: true });
+    console.log('Document written at: ', Date.now());
+  } catch (error) {
+    alert('error setting doc: ' + error);
+    console.log(error);
+  }
+}
+
+export async function submitLead(lead, docName, subcollectionName) { 
+  const collectionRef = collection(db, "users", auth.currentUser.email, eventID);
   try {
     await setDoc(doc(collectionRef, docName), lead, { merge: true });
     console.log('Document written at: ', Date.now());
