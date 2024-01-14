@@ -1,15 +1,23 @@
+/**
+ * Import function triggers from their respective submodules:
+ *
+ * const {onCall} = require("firebase-functions/v2/https");
+ * const {onDocumentWritten} = require("firebase-functions/v2/firestore");
+ *
+ * See a full list of supported triggers at https://firebase.google.com/docs/functions
+ */
+
 /* eslint @typescript-eslint/no-var-requires: "off" */
-// See a full list of supported triggers at https://firebase.google.com/docs/functions
 
 const logger = require('firebase-functions/logger');
 const functions = require('firebase-functions');
 const { initializeApp } = require('firebase-admin/app');
 const { getFirestore } = require('firebase-admin/firestore');
 const { SecretManagerServiceClient } = require('@google-cloud/secret-manager');
-const fetch = require('node-fetch');
 
-const app = initializeApp();
-const db = getFirestore(app);
+initializeApp();
+const db = getFirestore();
+const client = new SecretManagerServiceClient();
 
 const leadFields = {
   created: '', // timestamp
@@ -25,14 +33,11 @@ const leadFields = {
   // timestamp: undefined
 };
 
-const uploadCollection = 'eventbrite';
-
 /**
  * Retrieves key from google secret manager
  * @return {Promise<string>} Secret value from Google Secret Manager
  */
 async function getEBKey() {
-  const client = new SecretManagerServiceClient();
   const name = 'projects/292470144917/secrets/EB_key/versions/HH';
 
   const [version] = await client.accessSecretVersion({ name });
@@ -45,7 +50,6 @@ async function getEBKey() {
  * @return {Promise<string>} Secret value from Google Secret Manager
  */
 async function getEventID() {
-  const client = new SecretManagerServiceClient();
   const name = 'projects/292470144917/secrets/EB_event_id/versions/latest';
 
   const [version] = await client.accessSecretVersion({ name });
@@ -54,7 +58,7 @@ async function getEventID() {
 }
 
 /**
- * Retrieves ALL attendees from eventbrite
+ * Retrieves a page of attendees from eventbrite
  * @param {number} pageNumber Page number of returned data to pull. 1 by default.
  * @return {json} JSON of returned data from eventbrite. Contains 2 parent keys: pagination and attendees
  */
@@ -115,12 +119,18 @@ function populateAttendeeTemplate(attendee) {
  * Calls firestore to see if there is a lastUpdated doc. If so, filters out attendees who were added to the collection after the last update time.
  * Uploads all new attendees to firestore.
  * Note that this relies on Eventbrite's api to return two parent keys: pagination and attendees.
- * @param {string} collectionName Name of collection to upload to.
+ * @param {string} collectionPath Slash separated string of the collection path. e.g. '/events/123/eventbrite'
  * @return {Promise<Array<Array, Number>>} A promise of an Array. The first element is an array of new attendees. The second element is the time of the most recently created attendee.
  */
-async function getNewAttendees(collectionName) {
+async function getNewAttendees(collectionPath) {
+  // retrieve last updated time from firestore
+  // if no last updated time, retrieve all attendees
+  // if last updated time, retrieve attendees after last updated time
+  // upload attendees to firestore
+  // update last updated time, with the timestamp of the most recent registration
+  // return new attendees
   try {
-    const lastUpdateDoc = await db.collection(`${collectionName}`).doc('lastUpdated').get(); // TODO: UPDATE to match new folder structure
+    const lastUpdateDoc = await db.collection(collectionPath).doc('0_lastUpdated').get();
     const lastUpdateTime = lastUpdateDoc.exists ? lastUpdateDoc.data().timestamp : 0;
     const result = [];
     let currentPage = 1;
@@ -171,11 +181,10 @@ async function getNewAttendees(collectionName) {
 
 /**
  * Updates lastpulled time in the event that there are no new attendees
- * @param {String} collectionName
+ * @param {String} collectionPath Slash separated string of the collection path. e.g. '/events/123/eventbrite'
  */
-async function updatePullTime(collectionName) {
-  // TODO: UPDATE to match new folder structure
-  const lastUpdateRef = db.collection(collectionName).doc('lastUpdated');
+async function updatePullTime(collectionPath) {
+  const lastUpdateRef = db.collection(collectionPath).doc('0_lastUpdated');
   try {
     await lastUpdateRef.set(
       {
@@ -183,24 +192,25 @@ async function updatePullTime(collectionName) {
       },
       { merge: true }
     );
+    logger.info('[Cloud fn] Updated lastpull time');
   } catch (error) {
     logger.error(error);
-    logger.error('Error in updatePullTime()');
+    logger.error('Error in updatePullTime');
   }
 }
 
 /**
  * Uploads an array of documents to a given collection in Firestore as one or more batchWrites.
- * @param {string} collectionName The name of the collection in Firestore to upload the documents to.
+ * @param {string} collectionPath Slash separated string of the collection path. e.g. '/events/123/eventbrite'
  * @param {Array} dataArray An array of documents to upload. Each document should be an object with data stored as key-value pairs.
  * @param {number} lastUpdateTime Milliseconds since epoch. Used to update the lastUpdated doc.
  * @param {number} batchSize The number of operations per batch. Default is 500.
  */
-async function uploadBatch(collectionName, dataArray, lastUpdateTime, batchSize = 500) {
+async function uploadBatch(collectionPath, dataArray, lastUpdateTime, batchSize = 500) {
   // TODO: UPDATE to match new folder structure
   batchSize = batchSize - 1; // -1 to account for lastUpdated doc
-  const lastUpdateRef = db.collection(collectionName).doc('lastUpdated');
-  logger.info('number of records to upload: ' + dataArray.length);
+  const lastUpdateRef = db.collection(collectionPath).doc('0_lastUpdated');
+  logger.info('[Cloud fn] Number of records to upload: ' + dataArray.length);
   const numBatches = Math.ceil(dataArray.length / batchSize);
 
   for (let i = 0; i < numBatches; i++) {
@@ -212,7 +222,7 @@ async function uploadBatch(collectionName, dataArray, lastUpdateTime, batchSize 
 
       batchArray.forEach((obj) => {
         // set the name of the doc to be the id of the attendee
-        const docRef = db.collection(collectionName).doc(obj.id);
+        const docRef = db.collection(collectionPath).doc(obj.id);
         batch.set(docRef, { ...obj });
       });
 
@@ -230,50 +240,76 @@ async function uploadBatch(collectionName, dataArray, lastUpdateTime, batchSize 
   }
 }
 
-/**
- * Uploads all new attendees from eventbrite.
- * Used for testing purposes.
- * @deprecated
- */
-exports.uploadEB = functions
-  .region('asia-southeast1')
-  .runWith({ timeoutSeconds: 310 })
-  .https.onRequest(async (req, res) => {
-    const data = await getNewAttendees(uploadCollection);
-    if (data) {
-      uploadBatch(uploadCollection, data[0], data[1]);
-      logger.info('done');
-      res.send('done');
-    } else {
-      logger.info('No new attendees'); // TODO: ERROR HANDLING
-      res.send('error');
-    }
-  });
+/* exports.testUpdatePullTime = onRequest(async (request, response) => {
+  // tests if updatePullTime works
+  let eventID = await getEventID();
+  let collectionName = 'eventbrite';
+  const ebCollectionPath = '/events/' + `${eventID}` + '/' + `${collectionName}`;
+  try {
+    updatePullTime(ebCollectionPath).then(() => {
+      response.send('done');
+    });
+  } catch (e) {
+    logger.error(e);
+  }
+}); */
 
+/* exports.testBatch = onRequest(async (request, response) => {
+  // tests batch upload by uploading the first page from an EB pull
+  let eventID = await getEventID();
+  let collectionName = 'eventbrite';
+  const ebCollectionPath = '/events/' + `${eventID}` + '/' + `${collectionName}`;
+  const data = await getData();
+  const attendees = data.attendees;
+  const batchArray = [];
+  attendees.forEach((attendee) => {
+    const template = populateAttendeeTemplate(attendee);
+    batchArray.push(template);
+  });
+  uploadBatch(ebCollectionPath, batchArray, new Date().getTime()).then(() => {
+    response.send('done');
+  });
+}); */
 /**
- * Uploads all new attendees from eventbrite every minute.
+ * Pulls new attendees from eventbrite when triggered.
  */
-exports.uploadEBpubSub = functions
-  .region('asia-southeast1')
-  .runWith({ memory: '1GB', timeoutSeconds: 180 })
-  .pubsub.schedule('every 5 minutes')
+/* exports.pullNewAttendees = onRequest({ timeoutSeconds: 300 }, async (request, response) => {
+  const eventID = await getEventID();
+  const collectionName = 'eventbrite';
+  const ebCollectionPath = '/events/' + `${eventID}` + '/' + `${collectionName}`;
+  const data = await getNewAttendees(ebCollectionPath);
+  if (data) {
+    uploadBatch(ebCollectionPath, data[0], data[1]).then(() => {
+      response.send('done');
+    });
+  } else {
+    updatePullTime(ebCollectionPath).then(() => {
+      response.send('no new');
+    });
+  }
+}); */
+
+/* eslint @typescript-eslint/no-unused-vars: "off" */
+/**
+ * Pulls new attendees from eventbrite every 5 minutes.
+ * Uses functions v1
+ */
+exports.pullNewAttendeesScheduled = functions
+  .region('asia-east1')
+  .runWith({ timeoutSeconds: 300 })
+  .pubsub.schedule('every 3 minutes')
   .onRun(async () => {
-    const data = await getNewAttendees(uploadCollection);
+    const eventID = await getEventID();
+    const collectionName = 'eventbrite';
+    const ebCollectionPath = '/events/' + `${eventID}` + '/' + `${collectionName}`;
+    const data = await getNewAttendees(ebCollectionPath);
     if (data) {
-      uploadBatch(uploadCollection, data[0], data[1]);
-      logger.info('done');
+      uploadBatch(ebCollectionPath, data[0], data[1]).then(() => {
+        logger.info('[CF Scheduled] done');
+      });
     } else {
-      updatePullTime(uploadCollection);
-      logger.info('No new attendees'); // TODO: ERROR HANDLING
+      updatePullTime(ebCollectionPath).then(() => {
+        logger.info('no new attendees');
+      });
     }
   });
-
-module.exports = {
-  getEBKey,
-  getEventID,
-  getData,
-  populateAttendeeTemplate,
-  getNewAttendees,
-  updatePullTime,
-  uploadBatch
-};
