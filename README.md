@@ -1,18 +1,15 @@
----
-
 # Todos
 
 - [ ] Unit tests
 - [ ] Documentation
 - [ ] Sort by creation date, not by edit date -> edit upload
 - [ ] Additional display field? Scanned at xxx date & time
-- [ ] Add favicon
 - [ ] Modify scrollbar display
-- [ ] TEST EVENTBRITE PULLS
-- [X] verify that the population of the Attendee object matches the questions from the Fetched response
+- [x] Add favicon
+- [x] verify that the population of the Attendee object matches the questions from the Fetched response
 
-Changes to be done:
-Shift to an event-first structure
+Current structure
+
 ```
 Events
 |-  Event1
