@@ -20,6 +20,7 @@ const config = {
     highlightScanRegion: true
   },
   modalStyles: {
+    /* UNUSED - use only if using react-modal library */
     overlay: {
       backgroundColor: 'rgba(0, 0, 0, 0.75)'
     },

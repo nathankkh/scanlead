@@ -1,4 +1,4 @@
-import { logout } from '../../firebase-setup/firebase-functions';
+import { logout } from '../../utils/firebase/firebase-functions';
 import Button from '@mui/joy/Button/Button';
 
 export default function UserLogout() {
