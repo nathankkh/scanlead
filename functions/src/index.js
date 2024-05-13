@@ -9,6 +9,7 @@
 
 /* eslint @typescript-eslint/no-var-requires: "off" */
 
+// TODO: Create an auth-triggered cloud function triggered on event selection to add event to exhibitor details
 const logger = require('firebase-functions/logger');
 const functions = require('firebase-functions');
 const { initializeApp } = require('firebase-admin/app');
@@ -126,7 +127,7 @@ function populateAttendeeTemplate(attendee) {
  * Uploads all new attendees to firestore.
  * Note that this relies on Eventbrite's api to return two parent keys: pagination and attendees.
  * @param {string} collectionPath Slash separated string of the collection path where eventbrite attendees are stored. e.g. '/events/123/eventbrite'
- * @return {Promise<Array<Array, Number>>} A promise of an Array. The first element is an array of new attendees. The second element is the time of the most recently created attendee.
+ * @return {Promise<Array<Array, number>>} A promise of an Array. The first element is an array of new attendees. The second element is the time of the most recently created attendee.
  */
 async function getNewAttendees(collectionPath) {
   // if last updated time, retrieve attendees after last updated time
@@ -193,17 +194,23 @@ async function getNewAttendees(collectionPath) {
 }
 
 /**
- * Updates lastpulled time in the event that there are no new attendees
+ * Updates lastpulled time in the event that there are no new attendees. Updates with the current time.
  * @param {String} collectionPath Slash separated string of the collection path. e.g. '/events/123/eventbrite'
  */
 async function updatePullTime(collectionPath) {
   // Create reference to lastUpdated document.
   const lastUpdateRef = db.collection(collectionPath).doc('0_lastUpdated');
 
+  // Get current time in UTC+8
+  const now = new Date();
+  const nowUTC = new Date(now.getTime() + now.getTimezoneOffset() * 60000);
+  const gmt8Time = new Date(nowUTC.getTime() + 3600000 * 8);
+
+  // Update 0_lastUpdated doc with current time.
   try {
     await lastUpdateRef.set(
       {
-        lastpull: new Date().toString()
+        lastpull: gmt8Time.toString()
       },
       { merge: true }
     );
@@ -248,7 +255,7 @@ async function uploadBatch(collectionPath, dataArray, lastUpdateTime, batchSize 
         'timestamp datetime': new Date(lastUpdateTime),
         lastpull: new Date().toString()
       });
-      batch.commit();
+      await batch.commit();
       logger.debug('batched');
     } catch (err) {
       logger.error(err);
@@ -257,55 +264,6 @@ async function uploadBatch(collectionPath, dataArray, lastUpdateTime, batchSize 
     }
   }
 }
-
-/* exports.testUpdatePullTime = onRequest(async (request, response) => {
-  // tests if updatePullTime works
-  let eventID = await getEventID();
-  let collectionName = 'eventbrite';
-  const ebCollectionPath = '/events/' + `${eventID}` + '/' + `${collectionName}`;
-  try {
-    updatePullTime(ebCollectionPath).then(() => {
-      response.send('done');
-    });
-  } catch (e) {
-    logger.error(e);
-  }
-}); */
-
-/* exports.testBatch = onRequest(async (request, response) => {
-  // tests batch upload by uploading the first page from an EB pull
-  let eventID = await getEventID();
-  let collectionName = 'eventbrite';
-  const ebCollectionPath = '/events/' + `${eventID}` + '/' + `${collectionName}`;
-  const data = await getData();
-  const attendees = data.attendees;
-  const batchArray = [];
-  attendees.forEach((attendee) => {
-    const template = populateAttendeeTemplate(attendee);
-    batchArray.push(template);
-  });
-  uploadBatch(ebCollectionPath, batchArray, new Date().getTime()).then(() => {
-    response.send('done');
-  });
-}); */
-/**
- * Pulls new attendees from eventbrite when triggered.
- */
-/* exports.pullNewAttendees = onRequest({ timeoutSeconds: 300 }, async (request, response) => {
-  const eventID = await getEventID();
-  const collectionName = 'eventbrite';
-  const ebCollectionPath = '/events/' + `${eventID}` + '/' + `${collectionName}`;
-  const data = await getNewAttendees(ebCollectionPath);
-  if (data) {
-    uploadBatch(ebCollectionPath, data[0], data[1]).then(() => {
-      response.send('done');
-    });
-  } else {
-    updatePullTime(ebCollectionPath).then(() => {
-      response.send('no new');
-    });
-  }
-}); */
 
 /* eslint @typescript-eslint/no-unused-vars: "off" */
 /**
