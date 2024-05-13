@@ -10,15 +10,26 @@
 /* eslint @typescript-eslint/no-var-requires: "off" */
 
 // TODO: Create an auth-triggered cloud function triggered on event selection to add event to exhibitor details
+/* module */
+import { logger } from 'firebase-functions';
+import * as functions from 'firebase-functions';
+import { initializeApp } from 'firebase-admin/app';
+import { getFirestore } from 'firebase-admin/firestore';
+import { SecretManagerServiceClient } from '@google-cloud/secret-manager';
+
+/* CJS
 const logger = require('firebase-functions/logger');
 const functions = require('firebase-functions');
 const { initializeApp } = require('firebase-admin/app');
 const { getFirestore } = require('firebase-admin/firestore');
 const { SecretManagerServiceClient } = require('@google-cloud/secret-manager');
+*/
 
 /* Begin V2 imports */
-const { onSchedule } = require('firebase-functions/v2/scheduler');
-const { onRequest } = require('firebase-functions/v2/https');
+import { onSchedule } from 'firebase-functions/v2/scheduler';
+import { onRequest } from 'firebase-functions/v2/https';
+/* const { onSchedule } = require('firebase-functions/v2/scheduler');
+const { onRequest } = require('firebase-functions/v2/https');*/
 /* End V2 imports */
 
 initializeApp();
@@ -270,7 +281,7 @@ async function uploadBatch(collectionPath, dataArray, lastUpdateTime, batchSize 
  * Pulls new attendees from eventbrite every 5 minutes.
  * Uses functions v1
  */
-exports.pullNewAttendeesScheduled = functions
+export const pullNewAttendeesScheduled = functions
   .region('asia-east1')
   .runWith({ timeoutSeconds: 300 })
   .pubsub.schedule('every 3 minutes')
@@ -295,7 +306,7 @@ exports.pullNewAttendeesScheduled = functions
  * Uses functions v2.
  * Follows runtime options that are set in Google Cloud.
  */
-exports.pullNewAttendeesV2 = onSchedule(
+export const pullNewAttendeesV2 = onSchedule(
   {
     preserveExternalChanges: true,
     schedule: 'every minute',
@@ -323,7 +334,7 @@ exports.pullNewAttendeesV2 = onSchedule(
  * Pulls new attendees from eventbrite when triggered.
  * Manual trigger for testing purposes.
  */
-exports.pullNewAttendeesManual = onRequest(async (request, response) => {
+export const pullNewAttendeesManual = onRequest(async (request, response) => {
   const eventID = await getEventID();
   const collectionName = 'eventbrite';
   const ebCollectionPath = '/events/' + `${eventID}` + '/' + `${collectionName}`;
@@ -338,3 +349,35 @@ exports.pullNewAttendeesManual = onRequest(async (request, response) => {
     });
   }
 });
+
+export const testNewLastUpdatedDoc = onRequest(async (request, response) => {
+  const eventID = '123';
+  const collectionName = 'eventbrite';
+  const ebCollectionPath = '/events/' + `${eventID}` + '/' + `${collectionName}`;
+  const lastUpdateRef = db.collection(ebCollectionPath).doc('0_lastUpdated');
+  await lastUpdateRef.set(
+    {
+      lastpull: new Date().toString()
+    },
+    { merge: true }
+  );
+  console.log('updated lastUpdateValue');
+  const lastUpdateDoc = await db.collection(ebCollectionPath).doc('0_lastUpdated').get();
+  const lastUpdateTime = lastUpdateDoc.exists ? lastUpdateDoc.data().timestamp : 0;
+  response.send(lastUpdateTime);
+  console.info(lastUpdateTime);
+});
+
+export const getlastupdated = onRequest(async (request, response) => {
+  const eventID = '123';
+  const collectionName = 'eventbrite';
+  const ebCollectionPath = '/events/' + `${eventID}` + '/' + `${collectionName}`;
+  let lastUpdateDoc = await db.collection(ebCollectionPath).doc('0_lastUpdated').get();
+  lastUpdateDoc = lastUpdateDoc.data();
+  if (lastUpdateDoc.timestamp) {
+    response.send(lastUpdateDoc.timestamp);
+  } else {
+    response.send('No timestamp found');
+  }
+});
+// module.exports = { getEBKey, getEventID, getData, populateAttendeeTemplate, updatePullTime };

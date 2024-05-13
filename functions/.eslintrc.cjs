@@ -1,6 +1,6 @@
 module.exports = {
   env: {
-    es6: false,
+    es6: true,
     node: true,
     jest: true
   },
@@ -11,7 +11,7 @@ module.exports = {
   rules: {
     'no-restricted-globals': ['error', 'name', 'length'],
     'prefer-arrow-callback': 'error',
-    '@typescript-eslint/no-var-requires': 0
+
   },
   overrides: [
     {
