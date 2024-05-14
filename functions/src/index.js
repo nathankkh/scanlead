@@ -7,51 +7,31 @@
  * See a full list of supported triggers at https://firebase.google.com/docs/functions
  */
 
-/* eslint @typescript-eslint/no-var-requires: "off" */
-
 // TODO: Create an auth-triggered cloud function triggered on event selection to add event to exhibitor details
-/* module */
 import { logger } from 'firebase-functions';
 import * as functions from 'firebase-functions';
 import { initializeApp } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
 import { SecretManagerServiceClient } from '@google-cloud/secret-manager';
 
-/* CJS
-const logger = require('firebase-functions/logger');
-const functions = require('firebase-functions');
-const { initializeApp } = require('firebase-admin/app');
-const { getFirestore } = require('firebase-admin/firestore');
-const { SecretManagerServiceClient } = require('@google-cloud/secret-manager');
-*/
-
 /* Begin V2 imports */
 import { onSchedule } from 'firebase-functions/v2/scheduler';
 import { onRequest } from 'firebase-functions/v2/https';
-/* const { onSchedule } = require('firebase-functions/v2/scheduler');
-const { onRequest } = require('firebase-functions/v2/https');*/
-/* End V2 imports */
+
+/* Utils imports */
+import * as utils from './utils.js';
 
 initializeApp();
 const db = getFirestore();
 const client = new SecretManagerServiceClient();
-
-const leadFields = {
-  created: '', // timestamp
-  id: '',
-  name: '',
-  email: '',
-  phone: '',
-  jobTitle: '',
-  experience: '',
-  fieldOfInterest: '',
-  leadType: '', // [hot, warm, cold]
-  comments: ''
-  // timestamp: undefined
-};
+const dtf = new Intl.DateTimeFormat('en-GB', {
+  dateStyle: 'long',
+  timeStyle: 'long',
+  timeZone: 'Asia/Singapore'
+});
 
 /**
- * Retrieves key from google secret manager
+ * Retrieves key from Google secret manager
  * @return {Promise<string>} Secret value from Google Secret Manager
  */
 async function getEBKey() {
@@ -106,32 +86,6 @@ async function getData(pageNumber = 1) {
 }
 
 /**
- * Takes in an attendee object from an Eventbrite API pull and populates the template `leadfields`.
- * @param {*} attendee An attendee's data from an Eventbrite API pull.
- * @return {json} JSON of attendee data.
- */
-function populateAttendeeTemplate(attendee) {
-  const template = { ...leadFields };
-  template.created = new Date(attendee.created).getTime();
-  template.id = attendee.order_id + attendee.id + '001';
-  template.name = attendee.profile.name;
-  template.email = attendee.profile.email;
-  template.phone = attendee.profile.cell_phone;
-  template.jobTitle = attendee.profile.job_title;
-  /*
-    0:  Work experience (years)
-    1: Field of interest
-    2: interested sessions
-    3: interested institutions
-    4: Capitaland tenant
-    5: T&C
-  */
-  template.experience = attendee.answers[0].answer;
-  template.fieldOfInterest = attendee.answers[1].answer;
-  return template;
-}
-
-/**
  * Retrieves all new attendees from eventbrite.
  * Calls `getData()` to retrieve all attendees from eventbrite.
  * Calls firestore to see if there is a lastUpdated doc. If so, filters out attendees who were added to the collection after the last update time.
@@ -141,10 +95,6 @@ function populateAttendeeTemplate(attendee) {
  * @return {Promise<Array<Array, number>>} A promise of an Array. The first element is an array of new attendees. The second element is the time of the most recently created attendee.
  */
 async function getNewAttendees(collectionPath) {
-  // if last updated time, retrieve attendees after last updated time
-  // upload attendees to firestore
-  // update last updated time, with the timestamp of the most recent registration
-  // return new attendees
   try {
     // get last updated time from FireStore. If it doesn't exist, set it to 0
     const lastUpdateDoc = await db.collection(collectionPath).doc('0_lastUpdated').get();
@@ -188,7 +138,7 @@ async function getNewAttendees(collectionPath) {
         if (new Date(attendee.created).getTime() > lastCreated) {
           lastCreated = new Date(attendee.created).getTime();
         }
-        const template = populateAttendeeTemplate(attendee);
+        const template = utils.populateAttendeeTemplate(attendee);
         result.push(template);
       }
 
@@ -201,6 +151,7 @@ async function getNewAttendees(collectionPath) {
     return [result, lastCreated];
   } catch (error) {
     logger.error('Error in getNewAttendees(): ' + error);
+    return null;
   }
 }
 
@@ -212,20 +163,28 @@ async function updatePullTime(collectionPath) {
   // Create reference to lastUpdated document.
   const lastUpdateRef = db.collection(collectionPath).doc('0_lastUpdated');
 
-  // Get current time in UTC+8
-  const now = new Date();
-  const nowUTC = new Date(now.getTime() + now.getTimezoneOffset() * 60000);
-  const gmt8Time = new Date(nowUTC.getTime() + 3600000 * 8);
-
   // Update 0_lastUpdated doc with current time.
   try {
     await lastUpdateRef.set(
       {
-        lastpull: gmt8Time.toString()
+        lastpull: dtf.format(new Date())
       },
       { merge: true }
     );
     logger.debug('[Cloud fn] Updated lastpull time');
+
+    // Edge case: If lastUpdated doc is newly created (i.e. no timestamp), set timestamp to 0.
+    const lastUpdateDoc = (await lastUpdateRef.get()).data();
+    if (!Object.prototype.hasOwnProperty.call(lastUpdateDoc, 'timestamp')) {
+      await lastUpdateRef.set(
+        {
+          timestamp: 0,
+          'timestamp datetime': new Date(0)
+        },
+        { merge: true }
+      );
+      logger.debug('[Cloud fn] No existing timestamp. Set timestamp to 0');
+    }
   } catch (error) {
     logger.error('Error in updatePullTime: ' + error);
   }
@@ -264,7 +223,7 @@ async function uploadBatch(collectionPath, dataArray, lastUpdateTime, batchSize 
       batch.set(lastUpdateRef, {
         timestamp: lastUpdateTime,
         'timestamp datetime': new Date(lastUpdateTime),
-        lastpull: new Date().toString()
+        lastpull: dtf.format(new Date())
       });
       await batch.commit();
       logger.debug('batched');
@@ -350,34 +309,45 @@ export const pullNewAttendeesManual = onRequest(async (request, response) => {
   }
 });
 
-export const testNewLastUpdatedDoc = onRequest(async (request, response) => {
+/**
+ * For testing purposes.
+ * Updates the lastUpdated doc with a dummy timestamp.
+ */
+export const dummyLastUpdated = onRequest(async (request, response) => {
   const eventID = '123';
   const collectionName = 'eventbrite';
   const ebCollectionPath = '/events/' + `${eventID}` + '/' + `${collectionName}`;
+  const lastUpdateTime = new Date('2024-01-13T06:14:03Z').getTime();
   const lastUpdateRef = db.collection(ebCollectionPath).doc('0_lastUpdated');
   await lastUpdateRef.set(
     {
+      timestamp: lastUpdateTime,
+      'timestamp datetime': new Date(lastUpdateTime),
       lastpull: new Date().toString()
     },
     { merge: true }
   );
   console.log('updated lastUpdateValue');
-  const lastUpdateDoc = await db.collection(ebCollectionPath).doc('0_lastUpdated').get();
-  const lastUpdateTime = lastUpdateDoc.exists ? lastUpdateDoc.data().timestamp : 0;
-  response.send(lastUpdateTime);
-  console.info(lastUpdateTime);
+  response.send('done');
 });
 
-export const getlastupdated = onRequest(async (request, response) => {
+/**
+ * For testing purposes.
+ * Call `dummylastupdated` before calling this function.
+ * Pulls all attendees created after the dummy timestamp from EB.
+ */
+export const test2pulls = onRequest(async (request, response) => {
   const eventID = '123';
   const collectionName = 'eventbrite';
   const ebCollectionPath = '/events/' + `${eventID}` + '/' + `${collectionName}`;
-  let lastUpdateDoc = await db.collection(ebCollectionPath).doc('0_lastUpdated').get();
-  lastUpdateDoc = lastUpdateDoc.data();
-  if (lastUpdateDoc.timestamp) {
-    response.send(lastUpdateDoc.timestamp);
+  const data = await getNewAttendees(ebCollectionPath);
+  if (data) {
+    uploadBatch(ebCollectionPath, data[0], data[1]).then(() => {
+      response.send('done');
+    });
   } else {
-    response.send('No timestamp found');
+    updatePullTime(ebCollectionPath).then(() => {
+      response.send('no new');
+    });
   }
 });
-// module.exports = { getEBKey, getEventID, getData, populateAttendeeTemplate, updatePullTime };
