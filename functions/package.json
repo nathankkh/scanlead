@@ -10,7 +10,7 @@
     "deploy": "firebase deploy --only functions",
     "logs": "firebase functions:log",
     "test": "firebase emulators:exec  \"jest --runInBand\"",
-    "testjest": "jest"
+    "testjest": "node --experimental-vm-modules node_modules/jest/bin/jest.js"
   },
   "engines": {
     "node": "18"
