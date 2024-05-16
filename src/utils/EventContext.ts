@@ -2,8 +2,8 @@ import { createContext, Dispatch, SetStateAction } from 'react';
 import Event from '../interfaces/Event';
 
 interface EventContextProps {
-  event: Event | null;
-  setEvent: Dispatch<SetStateAction<Event>>;
+  currentEvent: Event | null;
+  setCurrentEvent: Dispatch<SetStateAction<Event>>;
 }
 
 const defaultSetEvent: Dispatch<SetStateAction<Event>> = () => {
@@ -11,8 +11,8 @@ const defaultSetEvent: Dispatch<SetStateAction<Event>> = () => {
 };
 
 const EventContext = createContext<EventContextProps>({
-  event: null,
-  setEvent: defaultSetEvent
+  currentEvent: null,
+  setCurrentEvent: defaultSetEvent
 });
 
 export default EventContext;
