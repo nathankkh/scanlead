@@ -17,6 +17,7 @@ import { SecretManagerServiceClient } from '@google-cloud/secret-manager';
 /* Begin V2 imports */
 import { onSchedule } from 'firebase-functions/v2/scheduler';
 import { onRequest } from 'firebase-functions/v2/https';
+import { onDocumentCreated } from 'firebase-functions/v2/firestore';
 
 /* Utils imports */
 import * as utils from './utils.js';
@@ -235,6 +236,25 @@ async function uploadBatch(collectionPath, dataArray, lastUpdateTime, batchSize 
   }
 }
 
+/**
+ * Firestore Cloud Trigger that updates event details (name, date) when a new event is created (via the EB pull).
+ * @todo Trigger when new event is created in the Admin Panel.
+ * @todo Export this const when the trigger is implemented, to allow for deployment.
+ * @deprecated This function is not used in the current implementation; has not been deployed.
+ */
+const updateEventDetails = onDocumentCreated('events/{eventID}', (event) => {
+  // retrieve event id (document name)
+  const eventID = event.params.eventID;
+  logger.warn('Event created: ' + eventID);
+  const name = 'CHANGEME'
+  const date = 'CHANGEME'
+  const eventRef = db.collection('events').doc(eventID);
+  return eventRef.update({
+    name: name,
+    date: date
+  });
+});
+
 /* eslint @typescript-eslint/no-unused-vars: "off" */
 /**
  * Pulls new attendees from eventbrite every 5 minutes.
@@ -270,7 +290,8 @@ export const pullNewAttendeesV2 = onSchedule(
     preserveExternalChanges: true,
     schedule: 'every minute',
     timeZone: 'Asia/Singapore',
-    region: 'asia-east1'
+    region: 'asia-east1',
+    timeoutSeconds: 300
   },
   async () => {
     const eventID = await getEventID();
@@ -335,8 +356,9 @@ export const dummyLastUpdated = onRequest(async (request, response) => {
  * For testing purposes.
  * Call `dummylastupdated` before calling this function.
  * Pulls all attendees created after the dummy timestamp from EB.
+ * Note that a valid ID needs to be provided in Google for this to work.
  */
-export const test2pulls = onRequest(async (request, response) => {
+export const testpulls = onRequest(async (request, response) => {
   const eventID = '123';
   const collectionName = 'eventbrite';
   const ebCollectionPath = '/events/' + `${eventID}` + '/' + `${collectionName}`;
