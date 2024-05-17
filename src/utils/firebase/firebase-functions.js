@@ -1,5 +1,5 @@
 import firebaseApp from './firebase-config';
-import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from 'firebase/auth';
+import { getAuth, signInWithEmailAndPassword, signOut } from 'firebase/auth';
 import {
   getFirestore,
   collection,
@@ -9,7 +9,6 @@ import {
   deleteDoc,
   query,
   where,
-  getDoc,
   getDocs,
   setDoc,
   doc,
@@ -23,7 +22,7 @@ import { getStorage, ref, uploadBytesResumable, getDownloadURL } from 'firebase/
 export const auth = getAuth(firebaseApp);
 export const db = getFirestore(firebaseApp);
 export const storage = getStorage(firebaseApp);
-const eventID = '741341922647';
+const eventID = '741341922647'; // TODO: Update to match eventID
 
 export function getCurrentUserEmail() {
   if (auth.currentUser.email) {
@@ -69,7 +68,7 @@ export async function loginEmailPassword(username, password) {
 
 export async function logout() {
   try {
-    signOut(auth);
+    await signOut(auth);
     console.log('signed out');
   } catch (error) {
     console.log(error);
@@ -138,7 +137,7 @@ export async function submitLeadbk(lead, docName, collectionName = auth.currentU
 export async function submitLead(lead, docName, username = auth.currentUser.email) {
   // check for existence of doc. if exists, carry on.
   // if not, create doc with default values
-  updateEventsParticipated();
+  await updateEventsParticipated();
   const collectionRef = collection(db, 'users', username, eventID);
   try {
     await setDoc(doc(collectionRef, docName), lead, { merge: true });
@@ -150,7 +149,7 @@ export async function submitLead(lead, docName, username = auth.currentUser.emai
 }
 
 /**
- * Updates the array of events particpated in for a given user.
+ * Updates the array of events participated in for a given user.
  * @param {String} username
  */
 async function updateEventsParticipated(username = auth.currentUser.email) {
@@ -214,7 +213,7 @@ export async function lookupValue(lookupValue, path, referenceField) {
  * @returns A promise of an array of documents from the collection.
  */
 export async function getAllDocs(collectionName) {
-  //FIXME: Unused, can delete
+  // Currently ONLY used in EventSelector. TODO: Delete if EventSelector implementation changes.
   const collectionRef = collection(db, collectionName);
   const querySnapshot = await getDocs(collectionRef);
   const results = [];
@@ -277,7 +276,7 @@ export async function uploadBatch(collectionName, dataArray, lastUpdateTime, bat
         batch.set(docRef, { ...obj });
       });
       batch.set(lastUpdateRef, { timestamp: lastUpdateTime, dateTime: new Date(lastUpdateTime) });
-      batch.commit();
+      await batch.commit();
       console.log('batched');
     } catch (err) {
       console.log(err);

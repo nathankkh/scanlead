@@ -1,27 +1,32 @@
 {
   "name": "functions",
   "description": "Cloud Functions for Firebase",
+  "type": "module",
   "scripts": {
     "lint": "eslint .",
     "serve": "firebase emulators:start --only functions",
     "shell": "firebase functions:shell",
     "start": "npm run shell",
     "deploy": "firebase deploy --only functions",
-    "logs": "firebase functions:log"
+    "logs": "firebase functions:log",
+    "test": "firebase emulators:exec  \"jest --runInBand\"",
+    "testjest": "node --experimental-vm-modules node_modules/jest/bin/jest.js --runInBand"
   },
   "engines": {
     "node": "18"
   },
-  "main": "index.js",
+  "main": "src/index.js",
   "dependencies": {
-    "@google-cloud/secret-manager": "^5.0.1",
-    "firebase-admin": "^11.8.0",
-    "firebase-functions": "^4.3.1"
+    "@google-cloud/secret-manager": "^5.5.0",
+    "firebase-admin": "^12.1.0",
+    "firebase-functions": "^5.0.1"
   },
   "devDependencies": {
+    "@types/jest": "^29.5.12",
     "eslint": "^8.15.0",
     "eslint-config-google": "^0.14.0",
-    "firebase-functions-test": "^3.1.0"
+    "firebase-functions-test": "^3.2.0",
+    "jest": "^29.7.0"
   },
   "private": true
 }

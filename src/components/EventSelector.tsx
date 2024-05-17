@@ -1,7 +1,8 @@
 import { Button, Stack } from '@mui/joy';
 import { getAllDocs } from '../utils/firebase/firebase-functions';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useContext } from 'react';
 import Event from '../interfaces/Event';
+import EventContext from '../utils/EventContext';
 
 import { db } from '../utils/firebase/firebase-functions';
 import { collection, getDocs } from 'firebase/firestore';
@@ -19,6 +20,7 @@ async function getAllDocsFromSubcollection() {
 
 export default function EventSelector() {
   const [events, setEvents] = useState<Event[]>([]);
+  const { currentEvent, setCurrentEvent } = useContext(EventContext);
 
   // Populates events array with all existing events
   useEffect(() => {
@@ -31,7 +33,7 @@ export default function EventSelector() {
     <Stack>
       {/* Stack of all existing events, using their IDs as a unique key */}
       {events.map((event: Event) => (
-        <Button key={event.id} variant="plain">
+        <Button key={event.id} variant="plain" onClick={() => setCurrentEvent(event)}>
           {event.Name}
         </Button>
       ))}
@@ -39,6 +41,7 @@ export default function EventSelector() {
       <Button variant="solid" color="danger" onClick={getAllDocsFromSubcollection}>
         GetSubcollections
       </Button>
+      <p>{currentEvent?.Name}</p>
     </Stack>
   );
 }

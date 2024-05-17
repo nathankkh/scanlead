@@ -4,7 +4,8 @@ import EventContext from './utils/EventContext';
 import Logo from './components/Logo';
 import UserContainer from './components/user/UserContainer';
 import TabSelector from './components/leads/TabSelector';
-// import EventSelector from './components/EventSelector';
+/*import EventSelector from './components/EventSelector';*/
+
 import Event from './interfaces/Event';
 import { useState } from 'react';
 
@@ -26,10 +27,10 @@ function App() {
   return (
     <CssVarsProvider>
       <AuthContext.Provider value={{ isLoggedIn }}>
-        <EventContext.Provider value={{ event, setEvent }}>
+        <EventContext.Provider value={{ currentEvent: event, setCurrentEvent: setEvent }}>
           <>
             <Logo />
-            {/* <EventSelector />  */}
+            {/*<EventSelector />*/}
             <UserContainer setIsLoggedIn={setIsLoggedIn} showUser={showUser} />
             {isLoggedIn && <hr />}
             {isLoggedIn && <TabSelector setShowUser={setShowUser} />}
