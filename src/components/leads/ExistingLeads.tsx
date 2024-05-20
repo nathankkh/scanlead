@@ -172,7 +172,6 @@ function ExistingLeads({ leadsPerPage, setLeadsPerPage }) {
                 setCurrentPage(1);
               }}
             >
-              <Option value="3">3</Option>
               <Option value="10">10</Option>
               <Option value="20">20</Option>
               <Option value="50">50</Option>
@@ -283,7 +282,7 @@ function ExistingLeads({ leadsPerPage, setLeadsPerPage }) {
             }
           })}
         >
-          <Typography id="modal-title" level="h6">
+          <Typography id="modal-title" level="h4">
             <b>Are you sure?</b>
           </Typography>
           <Typography>

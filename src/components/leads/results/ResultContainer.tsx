@@ -1,5 +1,5 @@
 import LeadForm from './LeadForm';
-import config from '../../../../config.ts';
+import config from '../../../utils/config.ts';
 import { lookupValue, getCurrentUserEmail } from '../../../utils/firebase/firebase-functions.js';
 import { useState, useEffect } from 'react';
 

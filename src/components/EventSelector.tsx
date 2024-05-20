@@ -6,6 +6,7 @@ import EventContext from '../utils/EventContext';
 
 import { db } from '../utils/firebase/firebase-functions';
 import { collection, getDocs } from 'firebase/firestore';
+import Typography from '@mui/joy/Typography';
 
 // TODO: Remove this function
 async function getAllDocsFromSubcollection() {
@@ -41,7 +42,7 @@ export default function EventSelector() {
       <Button variant="solid" color="danger" onClick={getAllDocsFromSubcollection}>
         GetSubcollections
       </Button>
-      <p>{currentEvent?.Name}</p>
+      <Typography>{currentEvent?.Name}</Typography>
     </Stack>
   );
 }

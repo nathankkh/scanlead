@@ -5,6 +5,7 @@ import Logo from './components/Logo';
 import UserContainer from './components/user/UserContainer';
 import TabSelector from './components/leads/TabSelector';
 /*import EventSelector from './components/EventSelector';*/
+import joyTheme from './joyTheme.tsx';
 
 import Event from './interfaces/Event';
 import { useState } from 'react';
@@ -25,12 +26,12 @@ function App() {
   const [showUser, setShowUser] = useState(true); // used to hide user details when scanning QR code
 
   return (
-    <CssVarsProvider>
+    <CssVarsProvider theme={joyTheme}>
       <AuthContext.Provider value={{ isLoggedIn }}>
         <EventContext.Provider value={{ currentEvent: event, setCurrentEvent: setEvent }}>
           <>
             <Logo />
-            {/*<EventSelector />*/}
+            {/*{isLoggedIn && <EventSelector />}*/}
             <UserContainer setIsLoggedIn={setIsLoggedIn} showUser={showUser} />
             {isLoggedIn && <hr />}
             {isLoggedIn && <TabSelector setShowUser={setShowUser} />}

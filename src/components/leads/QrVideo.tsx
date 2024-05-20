@@ -1,7 +1,7 @@
 import QrScanner from 'qr-scanner';
 import { useState, useEffect, useRef } from 'react';
 import ResultContainer from './results/ResultContainer';
-import config from '../../../config';
+import config from '../../utils/config.ts';
 import Button from '@mui/joy/Button';
 
 function QrVideo() {
