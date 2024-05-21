@@ -3,6 +3,7 @@
   /* height: 100px; */
   display: 'flex';
   align-items: center;
+  max-width: 400px;
   /* margin-bottom: 2em; */
 }
 
@@ -54,4 +55,15 @@
 .page-select li.active {
   background-color: #ccc;
   color: white;
+}
+
+body,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+span {
+  font-family: 'Public Sans', sans-serif;
 }

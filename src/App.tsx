@@ -1,11 +1,10 @@
-import './App.css';
+import './styles/App.css';
 import AuthContext from './utils/AuthContext';
 import EventContext from './utils/EventContext';
-import Logo from './components/Logo';
+import Header from './components/Header.tsx';
 import UserContainer from './components/user/UserContainer';
 import TabSelector from './components/leads/TabSelector';
-/*import EventSelector from './components/EventSelector';*/
-import joyTheme from './joyTheme.tsx';
+import joyTheme from './styles/joyTheme.tsx';
 
 import Event from './interfaces/Event';
 import { useState } from 'react';
@@ -30,8 +29,7 @@ function App() {
       <AuthContext.Provider value={{ isLoggedIn }}>
         <EventContext.Provider value={{ currentEvent: event, setCurrentEvent: setEvent }}>
           <>
-            <Logo />
-            {/*{isLoggedIn && <EventSelector />}*/}
+            <Header />
             <UserContainer setIsLoggedIn={setIsLoggedIn} showUser={showUser} />
             {isLoggedIn && <hr />}
             {isLoggedIn && <TabSelector setShowUser={setShowUser} />}

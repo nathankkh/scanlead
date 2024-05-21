@@ -26,5 +26,7 @@ dist-ssr
 # Firebase deploy cache
 .firebase/*
 
+# Working files and backups
 src/firebase-setup/firebase-config.js
 src/components/backups/*
+scripts/*

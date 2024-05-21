@@ -95,7 +95,7 @@ function LeadForm({ leadFields, afterSubmit }) {
             // onChange={handleCommentsChange}
           ></Textarea>
           {/* Radio buttons */}
-          <FormControl component="fieldset" sx={{ display: 'inline-block' }}>
+          <FormControl component="fieldset" sx={{ display: 'inline-block', border: 'none' }}>
             <FormLabel sx={{ display: 'inline-block', mt: 2 }}>
               <Typography>Lead Type</Typography>
             </FormLabel>
