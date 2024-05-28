@@ -22,7 +22,7 @@ import { getStorage, ref, uploadBytesResumable, getDownloadURL } from 'firebase/
 export const auth = getAuth(firebaseApp);
 export const db = getFirestore(firebaseApp);
 export const storage = getStorage(firebaseApp);
-const eventID = '741341922647'; // TODO: Update to match eventID
+const eventID = '914400224687'; // TODO: Update to match eventID
 
 export function getCurrentUserEmail() {
   if (auth.currentUser.email) {
@@ -161,8 +161,7 @@ async function updateEventsParticipated(username = auth.currentUser.email) {
       { merge: true };
     console.log('updateEventsParticipated: updated array at ', Date.now());
   } catch (error) {
-    alert('updateEventsParticipated error: ' + error);
-    console.log(error);
+    console.error('updateEventsParticipated error: ' + error);
   }
 }
 

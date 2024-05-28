@@ -6,19 +6,23 @@ import Dropdown from '@mui/joy/Dropdown';
 
 import { getAllDocs } from '../utils/firebase/firebase-functions';
 import { useEffect, useState, useContext } from 'react';
-import Event from '../interfaces/Event';
+import PgEvent from '../interfaces/PgEvent.ts';
 import EventContext from '../utils/EventContext';
 
 export default function EventSelector() {
-  const [events, setEvents] = useState<Event[]>([]);
+  const [events, setEvents] = useState<PgEvent[]>([]);
   const { currentEvent, setCurrentEvent } = useContext(EventContext);
 
   // Populates events array with all existing events
   useEffect(() => {
     getAllDocs('events').then((docs) => {
+      docs.sort((a, b) => b.Date - a.Date);
       setEvents(docs);
+      if (docs) {
+        setCurrentEvent(docs[0]);
+      }
     });
-  }, []);
+  }, [setCurrentEvent]);
 
   return (
     <>
@@ -35,13 +39,11 @@ export default function EventSelector() {
           {currentEvent?.Name || 'Select event'}
         </MenuButton>
         <Menu>
-          {events
-            .sort((b, a) => a.Date - b.Date)
-            .map((event: Event, index) => (
-              <MenuItem key={index} onClick={() => setCurrentEvent(event)}>
-                {event.Name}
-              </MenuItem>
-            ))}
+          {events.map((event: PgEvent, index) => (
+            <MenuItem key={index} onClick={() => setCurrentEvent(event)}>
+              {event.Name}
+            </MenuItem>
+          ))}
         </Menu>
       </Dropdown>
     </>

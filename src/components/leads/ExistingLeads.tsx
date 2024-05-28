@@ -192,11 +192,10 @@ function ExistingLeads({ leadsPerPage, setLeadsPerPage }) {
             stripe="even"
             hoverRow
             sx={{
-              '& tr > *:first-of-type': {
-                left: 0,
+              '& tr > :first-of-type': {
                 textAlign: 'left'
               },
-              '& tr > *:last-child': {
+              '& tr > :last-child': {
                 textAlign: 'right'
               },
               alignItems: 'center'

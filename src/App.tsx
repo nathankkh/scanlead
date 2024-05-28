@@ -6,22 +6,23 @@ import UserContainer from './components/user/UserContainer';
 import TabSelector from './components/leads/TabSelector';
 import joyTheme from './styles/joyTheme.tsx';
 
-import Event from './interfaces/Event';
+import PgEvent from './interfaces/PgEvent.ts';
 import { useState } from 'react';
 
 import { CssVarsProvider } from '@mui/joy/styles';
 
-const PG_FAIR_2024_JAN: Event = {
-  Name: 'PG Fair 2024 (Jan)',
-  Date: new Date('2024-01-13'),
-  id: '741341922647'
+const PG_FAIR_2024_JAN: PgEvent = {
+  Name: 'PG Fair 2024 (Sept)',
+  Date: new Date('2024-09-14'),
+  id: '914400224687'
 };
 
 function App() {
   // used for context hooks
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [event, setEvent] = useState(PG_FAIR_2024_JAN); // Stored as the event ID. Modify this to be an object
+  const [event, setEvent] = useState(PG_FAIR_2024_JAN); // default event
   // end context
+
   const [showUser, setShowUser] = useState(true); // used to hide user details when scanning QR code
 
   return (
