@@ -10,13 +10,13 @@ function TabSelector({ setShowUser }) {
   const [leadsPerPage, setLeadsPerPage] = useState(10); // 10 leads per page
   function handleTabChange(tabNum) {
     setSelectedTab(tabNum);
-    setShowUser(tabNum === 0);
+    setShowUser(1); // set to `tabNum === 0` to hide details when scanning QR code
   }
 
   return (
     <>
       {/*TODO: Fix bottom padding*/}
-      <div style={{ paddingTop: '0.7rem', paddingBottom: '1rem' }}>
+      <div style={{ paddingTop: '0.7rem', paddingBottom: '2.3rem' }}>
         {selectedTab === 0 && (
           <ExistingLeads leadsPerPage={leadsPerPage} setLeadsPerPage={setLeadsPerPage} />
         )}
@@ -44,14 +44,14 @@ function TabSelector({ setShowUser }) {
           <Tab
             disableIndicator
             variant={selectedTab == 0 ? 'solid' : 'plain'}
-            sx={{ borderRadius: 'xl' }}
+            sx={{ borderRadius: 'xl', minHeight: '3rem' }}
           >
             Display Leads
           </Tab>
           <Tab
             disableIndicator
             variant={selectedTab == 1 ? 'solid' : 'plain'}
-            sx={{ borderRadius: 'xl' }}
+            sx={{ borderRadius: 'xl', minHeight: '3rem' }}
           >
             Scan Lead
           </Tab>

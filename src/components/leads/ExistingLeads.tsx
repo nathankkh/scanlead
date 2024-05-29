@@ -190,7 +190,6 @@ function ExistingLeads({ leadsPerPage, setLeadsPerPage }) {
         {(currentLeads.length > 0 && (
           <Table
             stripe="even"
-            hoverRow
             sx={{
               '& tr > :first-of-type': {
                 textAlign: 'left'
