@@ -74,7 +74,10 @@ export default function UserContainer({ setIsLoggedIn, showUser }) {
     'HH3',
     'HH4',
     'SUSSSHBS',
-    'SMUSOSS'
+    'SUSSSHBS1',
+    'SMUSOSS',
+    'upGrad',
+    'TMC'
   ];
 
   function displayUser(email) {

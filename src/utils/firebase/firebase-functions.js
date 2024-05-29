@@ -140,12 +140,15 @@ export async function submitLeadbk(lead, docName, collectionName = auth.currentU
  *
  * @param {Object} lead - An object containing the lead data.
  * @param {String} docName - The name of the document to be created or updated. (username_leadID)
- * @param {String} collectionName - The name of the collection where the document will be stored.
+ * @param {String || undefined} collectionName - The name of the collection where the document will be stored.
  * @param {String} [username=auth.currentUser.email] - The username of the current user. Defaults to the email of the currently authenticated user.
  *
  * @throws {Error} If there is an error during the document writing process.
  */
 export async function submitLead(lead, docName, collectionName, username = auth.currentUser.email) {
+  if (!collectionName) {
+    collectionName = '0001'; // edge case, dummy eventID
+  }
   await updateEventsParticipated(collectionName);
   const collectionRef = collection(db, 'users', username, collectionName);
   try {

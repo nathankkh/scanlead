@@ -32,12 +32,16 @@ Create a back button on the home page to select event
 
 ## Pre-event
 
-- Before each event, check the questions asked in the sign up page. Update `populateAttendeeTemplate` to match the questions asked.
+- Before each event, check the questions asked in the sign up page. Update `populateAttendeeTemplate` in [utils](/functions/src/utils.js) to match the questions asked.
 - Compare the receipt printed out with the ID field. It should be given by `order_id` + `id` + 001
 
 ## Adding new users
 
 - Add users to Firebase Authentication
-- Update the `user` array in [UserContainer](UserContainer.tsx)
+- Update the `user` array in [UserContainer](/src/components/user/UserContainer.tsx)
 
-#
+## Deployment
+```bash
+npm run build
+firebase deploy
+```

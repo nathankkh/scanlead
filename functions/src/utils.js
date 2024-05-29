@@ -28,16 +28,15 @@ function populateAttendeeTemplate(attendee) {
   template.phone = attendee.profile.cell_phone || '';
   template.jobTitle = attendee.profile.job_title || '';
   /*
-    0:  Work experience (years)
-    1: Field of interest
-    2: interested sessions
-    3: interested institutions
-    4: Capitaland tenant
-    5: T&C
+    0: How did you find out about this event
+    1: Working Experience (Years)
+    2: Field of Interest
+    3: Interested Intitutions/Session
+    4: T&C
   */
   if (attendee.answers) {
-    template.experience = attendee.answers[0].answer || '';
-    template.fieldOfInterest = attendee.answers[1].answer || '';
+    template.experience = attendee.answers[1].answer || '';
+    template.fieldOfInterest = attendee.answers[2].answer || '';
   }
   return template;
 }
