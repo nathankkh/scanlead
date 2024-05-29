@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import {
   getCurrentUserEmail,
   deleteLead,
@@ -6,6 +6,7 @@ import {
 } from '../../utils/firebase/firebase-functions';
 import LeadForm from './results/LeadForm';
 import Lead from '../../interfaces/Lead';
+import EventContext from '../../utils/EventContext.ts';
 
 import Button from '@mui/joy/Button';
 import Typography from '@mui/joy/Typography';
@@ -29,6 +30,7 @@ function ExistingLeads({ leadsPerPage, setLeadsPerPage }) {
   const [selectedLead, setSelectedLead] = useState<Lead>(); // {} object, to be used when editing
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState(''); //TODO: consider useRef. Will likely require a button to search; won't have realtime update of displayed leads
+  const currentEvent = useContext(EventContext).currentEvent;
 
   const filteredLeads = leads.filter((lead) =>
     lead.name
@@ -40,7 +42,9 @@ function ExistingLeads({ leadsPerPage, setLeadsPerPage }) {
   const currentLeads = filteredLeads.slice(indexOfFirstLead, indexOfLastLead);
 
   const userEmail = getCurrentUserEmail();
-  const userCollectionPath = `users/${userEmail}/741341922647`; // TODO: replace eventID with context value
+  const eventID = currentEvent?.id;
+  const userCollectionPath = eventID ? `users/${userEmail}/${eventID}` : 'users/${userEmail}/temp';
+
   useEffect(() => {
     // Creates a listener for a given firebase collection. Returns an unsubscribe function, which runs on component unmount.
     const unsubscribe = subscribeToCollection(
@@ -49,6 +53,8 @@ function ExistingLeads({ leadsPerPage, setLeadsPerPage }) {
         if (!querySnapshot.empty) {
           const existingLeads = querySnapshot.docs.map((snapshot) => snapshot.data());
           setLeads(existingLeads);
+        } else {
+          setLeads([]);
         }
       },
       (error) => {
@@ -109,7 +115,7 @@ function ExistingLeads({ leadsPerPage, setLeadsPerPage }) {
 
       // takes the org name from the email, and appends the id of the lead to be deleted
       // eg if email is "test@org.com", and id is "123", then docName is "test_123"
-      const docName = userEmail.split('@')[0] + '_' + id; //FIXME: Possible bug depending on how a Lead is added to firestore
+      const docName = userEmail.split('@')[0] + '_' + id;
       console.log('ExistingLeads: DocID to be deleted: ', docName);
       deleteLead(userCollectionPath, docName).then(() => {
         alert('Deleted!');
@@ -134,7 +140,7 @@ function ExistingLeads({ leadsPerPage, setLeadsPerPage }) {
 
   return (
     <>
-      <Typography level="h3" textAlign="center">
+      <Typography fontSize={'x-large'} textAlign="center">
         Leads
       </Typography>
       <Box sx={{ border: 1, borderColor: 'lightgrey', borderRadius: 10, p: 1 }}>
@@ -172,7 +178,6 @@ function ExistingLeads({ leadsPerPage, setLeadsPerPage }) {
                 setCurrentPage(1);
               }}
             >
-              <Option value="3">3</Option>
               <Option value="10">10</Option>
               <Option value="20">20</Option>
               <Option value="50">50</Option>
@@ -185,13 +190,11 @@ function ExistingLeads({ leadsPerPage, setLeadsPerPage }) {
         {(currentLeads.length > 0 && (
           <Table
             stripe="even"
-            hoverRow
             sx={{
-              '& tr > *:first-of-type': {
-                left: 0,
+              '& tr > :first-of-type': {
                 textAlign: 'left'
               },
-              '& tr > *:last-child': {
+              '& tr > :last-child': {
                 textAlign: 'right'
               },
               alignItems: 'center'
@@ -207,7 +210,9 @@ function ExistingLeads({ leadsPerPage, setLeadsPerPage }) {
             <tbody>
               {currentLeads.map((lead, index) => (
                 <tr key={index} data-index={index}>
-                  <td>{lead.name != '' ? properCase(lead.name) : lead.id}</td>
+                  <td>
+                    <Typography>{lead.name != '' ? properCase(lead.name) : lead.id}</Typography>
+                  </td>
                   <td>
                     <Box sx={{ display: 'flex', gap: 1, justifyContent: 'right' }}>
                       <Button size="sm" variant="outlined" color="neutral" onClick={handleEdit}>
@@ -227,6 +232,7 @@ function ExistingLeads({ leadsPerPage, setLeadsPerPage }) {
             <Typography sx={{ pt: 1 }}>No leads yet!</Typography>
           </div>
         )}
+        <br />
 
         {/* Pagination; this displays the page numbers at the bottom of the page */}
         <Stack
@@ -283,7 +289,7 @@ function ExistingLeads({ leadsPerPage, setLeadsPerPage }) {
             }
           })}
         >
-          <Typography id="modal-title" level="h6">
+          <Typography id="modal-title" level="h4">
             <b>Are you sure?</b>
           </Typography>
           <Typography>

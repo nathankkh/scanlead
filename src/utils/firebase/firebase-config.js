@@ -6,8 +6,7 @@ const firebaseConfig = {
   projectId: 'scanlead-17f3a',
   storageBucket: 'scanlead-17f3a.appspot.com',
   messagingSenderId: '292470144917',
-  appId: '1:292470144917:web:d0a3e1b8d2578485cc409c',
-  storageBucket: 'scanlead-17f3a.appspot.com'
+  appId: '1:292470144917:web:d0a3e1b8d2578485cc409c'
 };
 
 const firebaseApp = initializeApp(firebaseConfig);

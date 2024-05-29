@@ -35,10 +35,10 @@ export default function UserLoginForm() {
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
-          py: 1
+          pt: 1
         }}
       >
-        <Typography level="body2">Sign in to continue</Typography>
+        <Typography level="body-md">Sign in to continue</Typography>
       </Box>
       <Box
         sx={{

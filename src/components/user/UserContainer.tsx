@@ -10,7 +10,6 @@ import Typography from '@mui/joy/Typography';
 
 export default function UserContainer({ setIsLoggedIn, showUser }) {
   const { isLoggedIn } = useContext(AuthContext);
-
   const users = [
     'Aalto',
     'Amity',

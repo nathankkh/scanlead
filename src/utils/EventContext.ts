@@ -1,12 +1,12 @@
 import { createContext, Dispatch, SetStateAction } from 'react';
-import Event from '../interfaces/Event';
+import PgEvent from '../interfaces/PgEvent.ts';
 
 interface EventContextProps {
-  currentEvent: Event | null;
-  setCurrentEvent: Dispatch<SetStateAction<Event>>;
+  currentEvent: PgEvent | null;
+  setCurrentEvent: Dispatch<SetStateAction<PgEvent>>;
 }
 
-const defaultSetEvent: Dispatch<SetStateAction<Event>> = () => {
+const defaultSetEvent: Dispatch<SetStateAction<PgEvent>> = () => {
   0;
 };
 

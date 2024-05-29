@@ -22,7 +22,8 @@ import { getStorage, ref, uploadBytesResumable, getDownloadURL } from 'firebase/
 export const auth = getAuth(firebaseApp);
 export const db = getFirestore(firebaseApp);
 export const storage = getStorage(firebaseApp);
-const eventID = '741341922647'; // TODO: Update to match eventID
+
+// const eventID = '914400224687'; // TODO: Update to match eventID
 
 export function getCurrentUserEmail() {
   if (auth.currentUser.email) {
@@ -134,11 +135,19 @@ export async function submitLeadbk(lead, docName, collectionName = auth.currentU
   }
 }
 
-export async function submitLead(lead, docName, username = auth.currentUser.email) {
-  // check for existence of doc. if exists, carry on.
-  // if not, create doc with default values
-  await updateEventsParticipated();
-  const collectionRef = collection(db, 'users', username, eventID);
+/**
+ * Submits a lead to a specific collection in Firestore.
+ *
+ * @param {Object} lead - An object containing the lead data.
+ * @param {String} docName - The name of the document to be created or updated. (username_leadID)
+ * @param {String} collectionName - The name of the collection where the document will be stored.
+ * @param {String} [username=auth.currentUser.email] - The username of the current user. Defaults to the email of the currently authenticated user.
+ *
+ * @throws {Error} If there is an error during the document writing process.
+ */
+export async function submitLead(lead, docName, collectionName, username = auth.currentUser.email) {
+  await updateEventsParticipated(collectionName);
+  const collectionRef = collection(db, 'users', username, collectionName);
   try {
     await setDoc(doc(collectionRef, docName), lead, { merge: true });
     console.log('SubmitLead: Document written at: ', Date.now());
@@ -150,9 +159,10 @@ export async function submitLead(lead, docName, username = auth.currentUser.emai
 
 /**
  * Updates the array of events participated in for a given user.
- * @param {String} username
+ * @param {String} username The username of the user to update. Default is the current user.
+ * @param {String} eventID The ID of the event to add to the array.
  */
-async function updateEventsParticipated(username = auth.currentUser.email) {
+async function updateEventsParticipated(eventID, username = auth.currentUser.email) {
   const collectionRef = collection(db, 'users');
   try {
     await setDoc(doc(collectionRef, username), {
@@ -161,8 +171,7 @@ async function updateEventsParticipated(username = auth.currentUser.email) {
       { merge: true };
     console.log('updateEventsParticipated: updated array at ', Date.now());
   } catch (error) {
-    alert('updateEventsParticipated error: ' + error);
-    console.log(error);
+    console.error('updateEventsParticipated error: ' + error);
   }
 }
 

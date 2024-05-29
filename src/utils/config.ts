@@ -1,8 +1,8 @@
 const config = {
-  lookupCollection: 'eventbrite', // EB collection name
+  lookupCollection: 'eventbrite', // EB collection name, deprecated
   lookupField: 'id',
-  imageCollection: 'testing',
-  imageCloudStore: '',
+  imageCollection: 'testing', // deprecated
+  imageCloudStore: '', // deprecated
   leadFields: {
     id: '',
     name: '',

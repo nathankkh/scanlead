@@ -3,3 +3,4 @@ dist/
 .prettierrc
 .eslintrc
 src/components/backups/
+scripts/*

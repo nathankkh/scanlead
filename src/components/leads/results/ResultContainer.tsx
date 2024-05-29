@@ -1,17 +1,20 @@
 import LeadForm from './LeadForm';
-import config from '../../../../config.ts';
+import config from '../../../utils/config.ts';
 import { lookupValue, getCurrentUserEmail } from '../../../utils/firebase/firebase-functions.js';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
+import EventContext from '../../../utils/EventContext.ts';
 
 function ResultContainer({ result, resetState }) {
   const [leadFields, setLeadFields] = useState<typeof config.leadFields>(config.leadFields);
+  const currentEvent = useContext(EventContext).currentEvent;
+  const eventID = currentEvent?.id;
 
   useEffect(() => {
     async function populateFields(obj) {
       const updatedObj = { ...obj }; // copy object
       const userEmail = getCurrentUserEmail();
-      const userCollectionPath = `users/${userEmail}/741341922647`; // TODO: replace eventID with context value
-      const ebCollectionPath = `events/741341922647/eventbrite`;
+      const userCollectionPath = `users/${userEmail}/${eventID}`;
+      const ebCollectionPath = `events/${eventID}/eventbrite`;
       // Check if this exists in the collection of scanned leads (i.e. user has been scanned before)
       let doc = (await lookupValue(result, userCollectionPath, config.lookupField))[0];
       if (!doc) {
@@ -38,7 +41,7 @@ function ResultContainer({ result, resetState }) {
     populateFields(config.leadFields).then((obj) => {
       setLeadFields(obj);
     });
-  }, [result]);
+  }, [result, eventID]);
 
   return (
     <div>
