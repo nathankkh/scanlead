@@ -1,5 +1,6 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useContext } from 'react';
 import { getCurrentUser, submitLead } from '../../../utils/firebase/firebase-functions';
+import EventContext from '../../../utils/EventContext.ts';
 
 import Button from '@mui/joy/Button';
 import Box from '@mui/joy/Box';
@@ -14,6 +15,8 @@ function LeadForm({ leadFields, afterSubmit }) {
   const { name, jobTitle, experience, fieldOfInterest, leadType, comments } = leadFields;
   const [type, setType] = useState('');
   const commentRef = useRef<HTMLTextAreaElement>(null);
+  const currentEvent = useContext(EventContext).currentEvent;
+  const eventID = currentEvent?.id;
 
   // Modifies state when user changes lead type or comments
   useEffect(() => {
@@ -42,7 +45,7 @@ function LeadForm({ leadFields, afterSubmit }) {
     const lead = updateLead();
     try {
       const docName = getCurrentUser() + '_' + leadFields.id;
-      submitLead(lead, docName).then(afterSubmit);
+      submitLead(lead, docName, eventID).then(afterSubmit);
     } catch (err) {
       console.log(err);
       alert('Please submit again');
