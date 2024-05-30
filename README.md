@@ -41,6 +41,7 @@ Create a back button on the home page to select event
 - Update the `user` array in [UserContainer](/src/components/user/UserContainer.tsx)
 
 ## Deployment
+
 ```bash
 npm run build
 firebase deploy

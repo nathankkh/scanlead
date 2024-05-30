@@ -246,8 +246,8 @@ const updateEventDetails = onDocumentCreated('events/{eventID}', (event) => {
   // retrieve event id (document name)
   const eventID = event.params.eventID;
   logger.warn('Event created: ' + eventID);
-  const name = 'CHANGEME'
-  const date = 'CHANGEME'
+  const name = 'CHANGEME';
+  const date = 'CHANGEME';
   const eventRef = db.collection('events').doc(eventID);
   return eventRef.update({
     name: name,

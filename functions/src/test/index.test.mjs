@@ -1,4 +1,3 @@
-
 import * as func from '../index.js';
 import * as utils from '../utils.js';
 
@@ -27,7 +26,7 @@ describe('populateAttendeeTemplate', () => {
       id: '456',
       profile: {
         name: 'John Doe',
-        email: '',
+        email: ''
       }
     };
     const expected = {
