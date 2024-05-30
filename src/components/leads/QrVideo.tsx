@@ -66,7 +66,7 @@ function QrVideo() {
   return (
     <>
       <Button
-        sx={{ minHeight: '3em', backgroundColor: '#5b5a72' }}
+        sx={{ minHeight: '3em' /*backgroundColor: '#5b5a72'*/ }}
         onClick={() => setCameraActive(!cameraActive)}
       >
         {btnText}

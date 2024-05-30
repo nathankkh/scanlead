@@ -1,4 +1,4 @@
-import { useState, useEffect, useContext } from 'react';
+import { useState, useEffect, useContext, useRef } from 'react';
 import {
   getCurrentUserEmail,
   deleteLead,
@@ -31,6 +31,7 @@ function ExistingLeads({ leadsPerPage, setLeadsPerPage }) {
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState(''); //TODO: consider useRef. Will likely require a button to search; won't have realtime update of displayed leads
   const currentEvent = useContext(EventContext).currentEvent;
+  const leadsScrollRef = useRef<null | HTMLDivElement>(null);
 
   const filteredLeads = leads.filter((lead) =>
     lead.name
@@ -43,7 +44,7 @@ function ExistingLeads({ leadsPerPage, setLeadsPerPage }) {
 
   const userEmail = getCurrentUserEmail();
   const eventID = currentEvent?.id;
-  const userCollectionPath = eventID ? `users/${userEmail}/${eventID}` : 'users/${userEmail}/temp';
+  const userCollectionPath = eventID ? `users/${userEmail}/${eventID}` : 'users/${userEmail}/temp'; // use temp as a catch-all
 
   useEffect(() => {
     // Creates a listener for a given firebase collection. Returns an unsubscribe function, which runs on component unmount.
@@ -75,6 +76,11 @@ function ExistingLeads({ leadsPerPage, setLeadsPerPage }) {
       unsubscribe();
     };
   }, [userCollectionPath]);
+
+  useEffect(() => {
+    // Scrolls to the top of the leads container when currentPage changes
+    leadsScrollRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [currentPage]);
 
   function properCase(str: string) {
     return str
@@ -140,7 +146,7 @@ function ExistingLeads({ leadsPerPage, setLeadsPerPage }) {
 
   return (
     <>
-      <Typography fontSize={'x-large'} textAlign="center">
+      <Typography fontSize={'x-large'} textAlign="center" ref={leadsScrollRef}>
         Leads
       </Typography>
       <Box sx={{ border: 1, borderColor: 'lightgrey', borderRadius: 10, p: 1 }}>
@@ -178,6 +184,7 @@ function ExistingLeads({ leadsPerPage, setLeadsPerPage }) {
                 setCurrentPage(1);
               }}
             >
+              <Option value="5">5</Option>
               <Option value="10">10</Option>
               <Option value="20">20</Option>
               <Option value="50">50</Option>

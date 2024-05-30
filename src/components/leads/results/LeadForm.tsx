@@ -54,7 +54,7 @@ function LeadForm({ leadFields, afterSubmit }) {
 
   return (
     <>
-      <Box sx={{ overflow: 'auto' }}>
+      <Box sx={{ overflow: 'auto', pb: '0.5em' }}>
         <form>
           {/* Name */}
           <FormLabel>

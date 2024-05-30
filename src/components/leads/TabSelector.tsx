@@ -16,7 +16,7 @@ function TabSelector({ setShowUser }) {
   return (
     <>
       {/*TODO: Fix bottom padding*/}
-      <div style={{ paddingTop: '0.7rem', paddingBottom: '2.3rem' }}>
+      <div style={{ paddingTop: '0.2rem', paddingBottom: '2.3rem' }}>
         {selectedTab === 0 && (
           <ExistingLeads leadsPerPage={leadsPerPage} setLeadsPerPage={setLeadsPerPage} />
         )}
