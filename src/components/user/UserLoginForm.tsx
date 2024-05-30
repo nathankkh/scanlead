@@ -10,6 +10,7 @@ import Button from '@mui/joy/Button';
 
 export default function UserLoginForm() {
   const [errorMessage, setErrorMessage] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
   function validateEmail(email) {
     if (!email.includes('@')) {
@@ -21,13 +22,17 @@ export default function UserLoginForm() {
   async function handleSubmit(e) {
     e.preventDefault();
     setErrorMessage('');
+    setIsLoading(true); // Start loading spinner for sign in button
     const formData = new FormData(e.target);
     const email = validateEmail(formData.get('username'));
     const password = formData.get('password');
+
     loginEmailPassword(email, password)
       .then(() => setErrorMessage(''))
-      .catch((error) => setErrorMessage(error.message));
+      .catch((error) => setErrorMessage(error.message))
+      .finally(() => setIsLoading(false)); // Stop loading spinner for sign in button
   }
+
   return (
     <>
       <Box
@@ -70,7 +75,9 @@ export default function UserLoginForm() {
             <Input name="password" type="password" placeholder="Enter password" />
           </FormControl>
           {errorMessage && <Typography color="danger">{errorMessage}</Typography>}
-          <Button type="submit">Sign in</Button>
+          <Button type="submit" loading={isLoading}>
+            Sign in
+          </Button>
         </form>
       </Box>
     </>
