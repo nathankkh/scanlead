@@ -25,6 +25,7 @@ import ModalDialog from '@mui/joy/ModalDialog';
 
 function ExistingLeads({ leadsPerPage, setLeadsPerPage }) {
   const [leads, setLeads] = useState<Lead[]>([]); // Array containing each lead as an {} object
+  const [filteredLeads, setFilteredLeads] = useState<Lead[]>([]);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedLead, setSelectedLead] = useState<Lead>(); // {} object, to be used when editing
@@ -33,11 +34,21 @@ function ExistingLeads({ leadsPerPage, setLeadsPerPage }) {
   const currentEvent = useContext(EventContext).currentEvent;
   const leadsScrollRef = useRef<null | HTMLDivElement>(null);
 
-  const filteredLeads = leads.filter((lead) =>
-    lead.name
-      ? lead.name.toLowerCase().includes(searchQuery.toLowerCase())
-      : lead.id.includes(searchQuery)
-  );
+  useEffect(() => {
+    setFilteredLeads(
+      leads.filter((lead) =>
+        lead.name
+          ? lead.name.toLowerCase().includes(searchQuery.toLowerCase())
+          : lead.id.includes(searchQuery)
+      )
+    );
+  }, [leads, searchQuery]);
+  // const filteredLeads = leads.filter((lead) =>
+  //   lead.name
+  //     ? lead.name.toLowerCase().includes(searchQuery.toLowerCase())
+  //     : lead.id.includes(searchQuery)
+  // );
+
   const indexOfLastLead = currentPage * leadsPerPage;
   const indexOfFirstLead = indexOfLastLead - leadsPerPage;
   const currentLeads = filteredLeads.slice(indexOfFirstLead, indexOfLastLead);
@@ -235,10 +246,10 @@ function ExistingLeads({ leadsPerPage, setLeadsPerPage }) {
             </tbody>
           </Table>
         )) || (
-          <div>
-            <Typography sx={{ pt: 1 }}>No leads yet!</Typography>
-          </div>
-        )}
+            <div>
+              <Typography sx={{ pt: 1 }}>No leads yet!</Typography>
+            </div>
+          )}
         <br />
 
         {/* Pagination; this displays the page numbers at the bottom of the page */}
