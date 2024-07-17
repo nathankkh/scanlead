@@ -77,7 +77,22 @@ export default function UserContainer({ setIsLoggedIn, showUser }) {
     'SUSSSHBS1',
     'SMUSOSS',
     'upGrad',
-    'TMC'
+    'TMC',
+    'HKUST',
+    'CAE',
+    'SCALECE',
+    'LKYSPPCE',
+    'NUSBIZCE',
+    'NUSISSCE',
+    'NBSCE',
+    'SSSCE',
+    'PACECE',
+    'NIECE',
+    'EACE',
+    'SMUCE',
+    'SUTDCE',
+    'SITCE',
+    'SUSSCE'
   ];
 
   function displayUser(email) {

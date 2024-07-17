@@ -17,7 +17,6 @@ import { SecretManagerServiceClient } from '@google-cloud/secret-manager';
 /* Begin V2 imports */
 import { onSchedule } from 'firebase-functions/v2/scheduler';
 import { onRequest } from 'firebase-functions/v2/https';
-import { onDocumentCreated } from 'firebase-functions/v2/firestore';
 
 /* Utils imports */
 import * as utils from './utils.js';
@@ -242,7 +241,7 @@ async function uploadBatch(collectionPath, dataArray, lastUpdateTime, batchSize 
  * @todo Export this const when the trigger is implemented, to allow for deployment.
  * @deprecated This function is not used in the current implementation; has not been deployed.
  */
-const updateEventDetails = onDocumentCreated('events/{eventID}', (event) => {
+/* const updateEventDetails = onDocumentCreated('events/{eventID}', (event) => {
   // retrieve event id (document name)
   const eventID = event.params.eventID;
   logger.warn('Event created: ' + eventID);
@@ -253,12 +252,13 @@ const updateEventDetails = onDocumentCreated('events/{eventID}', (event) => {
     name: name,
     date: date
   });
-});
+});*/
 
 /* eslint @typescript-eslint/no-unused-vars: "off" */
 /**
  * Pulls new attendees from eventbrite every 5 minutes.
  * Uses functions v1
+ * @deprecated Use the v2 version of this function.
  */
 export const pullNewAttendeesScheduled = functions
   .region('asia-east1')
@@ -288,7 +288,7 @@ export const pullNewAttendeesScheduled = functions
 export const pullNewAttendeesV2 = onSchedule(
   {
     preserveExternalChanges: true,
-    schedule: 'every minute',
+    schedule: 'every 5 minutes',
     timeZone: 'Asia/Singapore',
     region: 'asia-east1',
     timeoutSeconds: 300
@@ -334,7 +334,7 @@ export const pullNewAttendeesManual = onRequest(async (request, response) => {
  * For testing purposes.
  * Updates the lastUpdated doc with a dummy timestamp.
  */
-export const dummyLastUpdated = onRequest(async (request, response) => {
+/* export const dummyLastUpdated = onRequest(async (request, response) => {
   const eventID = '123';
   const collectionName = 'eventbrite';
   const ebCollectionPath = '/events/' + `${eventID}` + '/' + `${collectionName}`;
@@ -350,7 +350,7 @@ export const dummyLastUpdated = onRequest(async (request, response) => {
   );
   console.log('updated lastUpdateValue');
   response.send('done');
-});
+});*/
 
 /**
  * For testing purposes.
@@ -358,6 +358,7 @@ export const dummyLastUpdated = onRequest(async (request, response) => {
  * Pulls all attendees created after the dummy timestamp from EB.
  * Note that a valid ID needs to be provided in Google for this to work.
  */
+/*
 export const testpulls = onRequest(async (request, response) => {
   const eventID = '123';
   const collectionName = 'eventbrite';
@@ -373,3 +374,4 @@ export const testpulls = onRequest(async (request, response) => {
     });
   }
 });
+*/

@@ -13,7 +13,7 @@
     "testjest": "node --experimental-vm-modules node_modules/jest/bin/jest.js --runInBand"
   },
   "engines": {
-    "node": "18"
+    "node": "20"
   },
   "main": "src/index.js",
   "dependencies": {

@@ -22,6 +22,6 @@
     "noImplicitAny": false
   },
   "include": ["src", "src/utils/config.ts"],
-  "exclude": ["src/components/backups/", "functions/src/test/"],
+  "exclude": ["src/components/backups/", "functions/src/test/", "**/*.log"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }
