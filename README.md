@@ -1,13 +1,3 @@
-# Todos
-
-- [ ] Unit tests
-- [ ] Documentation
-- [ ] Sort by creation date, not by edit date -> edit upload
-- [ ] Additional display field? Scanned at xxx date & time
-- [ ] Modify scrollbar display
-- [x] Add favicon
-- [x] verify that the population of the Attendee object matches the questions from the Fetched response
-
 Current structure
 
 ```
@@ -18,9 +8,6 @@ Events
 |   |- User2
 |   |   |- Lead2
 ```
-
-Create a new landing page after user login <- implement router?
-Create a back button on the home page to select event
 
 ---
 

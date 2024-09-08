@@ -246,10 +246,10 @@ function ExistingLeads({ leadsPerPage, setLeadsPerPage }) {
             </tbody>
           </Table>
         )) || (
-            <div>
-              <Typography sx={{ pt: 1 }}>No leads yet!</Typography>
-            </div>
-          )}
+          <div>
+            <Typography sx={{ pt: 1 }}>No leads yet!</Typography>
+          </div>
+        )}
         <br />
 
         {/* Pagination; this displays the page numbers at the bottom of the page */}
