@@ -95,7 +95,8 @@ export default function UserContainer({ setIsLoggedIn, showUser }) {
     sussce: 'SUSS CE',
     ntuccds: 'NTU CCDS',
     smuac: 'SMU Acad',
-    smued: 'SMU ED'
+    smued: 'SMU ED',
+    tspp: 'TSPP'
   };
 
   function displayUser(email) {
