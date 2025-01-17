@@ -67,7 +67,7 @@ export default function UserLoginForm() {
       >
         <form onSubmit={handleSubmit}>
           <FormControl required>
-            <FormLabel>Email</FormLabel>
+            <FormLabel>Username</FormLabel>
             <Input name="username" placeholder="Enter username" />
           </FormControl>
           <FormControl required>

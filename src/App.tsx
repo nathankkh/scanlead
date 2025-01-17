@@ -11,16 +11,16 @@ import { useState } from 'react';
 
 import { CssVarsProvider } from '@mui/joy/styles';
 
-const PG_FAIR_2024_JAN: PgEvent = {
-  Name: 'PG Fair 2024 (Sept)',
-  Date: new Date('2024-09-14'),
-  id: '914400224687'
+const PG_FAIR_2025: PgEvent = {
+  Name: 'PG Fair 2025 (Jan)',
+  Date: new Date('2025-01-18'),
+  id: '1075461396989'
 };
 
 function App() {
   // used for context hooks
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [event, setEvent] = useState(PG_FAIR_2024_JAN); // default event
+  const [event, setEvent] = useState(PG_FAIR_2025); // default event
   // end context
 
   const [showUser, setShowUser] = useState(true); // used to hide user details when scanning QR code
